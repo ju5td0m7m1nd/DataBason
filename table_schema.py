@@ -23,21 +23,29 @@ class Table :
     # 4 wrong value assign ( type error )
     # 5 varchar length incorrect
 
-    def CheckVaild(self,record):
+    def CheckValid(self,record):
 
         for attribute in self.attributeList:
-            print type(record[attribute['name']])
-            if attribute['type'] == 'char':
+                
+            columnType = attribute['type']
+            columnName = attribute['name']
+            print columnType
+            print columnName
+            print record[columnName]
+            if columnType == 'char':
                 if not type(record[attribute['name']]) is str :
                     return 4
-            elif attribute['type'] == 'int':
-                if not type(record[attribue['name']]) is int :
+            elif columnType == 'int':
+                if not type(record[attribute['name']]) is int :
                     return 4
-
-            return 1
             #check type
             #if type(record[attribute]) != type(attributeType):
             #    return 4
 
             #if
-         
+        return 1         
+
+    def __PrintColumn__(self):
+        
+        for attribute in self.attributeList:
+            print attribute['name'] + ' ' + attribute['type']
