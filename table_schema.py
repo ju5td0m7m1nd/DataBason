@@ -10,9 +10,13 @@ class Table :
 
     def Insert(self,newRecord):
         ErrorCode = self.CheckValid(newRecord)
-        print ErrorCode
         if ErrorCode == 1 :
-            self.records[len(self.records)+1] = newRecord
+            record = self.CreateRecordObject(newRecord)
+            if self.primaryKey == '':
+                self.records[len(self.records)+1] = record
+            else:
+                pkAttr = newRecord[self.primaryKey]
+                self.records[pkAttr] = record
         elif ErrorCode == 2:
             print "unknown column"
         elif ErrorCode == 3:
@@ -24,6 +28,13 @@ class Table :
         else:
             print "error" 
 
+    def CreateRecordObject(self,newRecord):
+        r = {}
+        for attr in self.attributeList:
+            r[attr] = None
+        for attr in newRecord:
+            r[attr] = newRecord[attr]
+        return r
     # error code
     # 1 vaild
     # 2 unknown column
@@ -33,30 +44,27 @@ class Table :
 
     def CheckValid(self,newRecord):
         self.newRecord = newRecord
-        for attribute in self.attributeList:
-            if not self.CheckTypeError(attribute) == True:
+        for r in self.newRecord:
+            if not self.CheckUnknownColumn(r) :
+                return 2  
+            if not self.CheckTypeError(r) == True:
                 return 4
-           
-            if attribute['name'] in self.newRecord:  
-                del self.newRecord[attribute['name']]
+            
         
-        if not self.CheckUnknownColumn():
-            return 2
+        return 1
 
     def CheckTypeError(self, attribute):
-        columnType = attribute['type']
-        columnName = attribute['name']
-        if columnName in self.newRecord:    
-            if columnType == 'char':
-                if not type(self.newRecord[columnName]) is str:
-                    return False
-            elif columnType == 'int':
-                if not type(self.newRecord[columnName]) is int:
-                    return False
+        columnType = self.attributeList[attribute]['type']
+        if columnType == 'char':
+            if not type(self.newRecord[attribute]) is str:
+                return False
+        elif columnType == 'int':
+            if not type(self.newRecord[attribute]) is int:
+                return False
         return True
     
-    def CheckUnknownColumn(self):
-        if len(self.newRecord) > 0 :
+    def CheckUnknownColumn(self,attribute):
+        if not attribute in self.attributeList:
             return False
         return True
 
@@ -65,10 +73,19 @@ class Table :
         
         for attribute in self.attributeList:
             print attribute['name'] + ' ' + attribute['type']
+    def __PrintData__(self):
+        for r in self.records:
+            print self.records[r]
 
-t = Table('student','',[{'name':'stuname','type':'char','length':'10'},{'name':'stuid','type':'int','length':''}])
+t = Table('student','',{'stuname':{'type':'char','length':'10'},'stuid':{'type':'int','length':''}})
 #Error 4 
 #t.Insert({'stuname':'frank','stuid':'123'})
 
 #Error 2
 #t.Insert({'stuname':'frank','id':'123'})
+
+#Error 3
+
+#Error 1
+#t.Insert({'stuname':'frank','stuid':102062115})
+#t.__PrintData__()
