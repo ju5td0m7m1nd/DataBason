@@ -6,9 +6,16 @@ class Table :
         self.tableName = tableName
         self.primaryKey = primaryKey
         self.attributeList = attributeList
+
         self.records = {}
 
-    def Insert(self,newRecord):
+    def Insert(self,Field,Value):
+        if not self.CheckFieldMatch(Field,Value):
+            print "Field, Value doesn't match"
+            return    
+        newRecord = {}
+        for i in Field:
+           newRecord(Field[i]) = Value[i] 
         ErrorCode = self.CheckValid(newRecord)
         if ErrorCode == 1 :
             record = self.CreateRecordObject(newRecord)
@@ -35,6 +42,11 @@ class Table :
         for attr in newRecord:
             r[attr] = newRecord[attr]
         return r
+    def CheckFieldMatch(self,Field,Value):
+        if not len(Field) == len(Value):
+            return False
+        return True
+
     # error code
     # 1 vaild
     # 2 unknown column
@@ -91,19 +103,10 @@ class Table :
         for r in self.records:
             print self.records[r]
 
-t = Table('student','stuname',{'stuname':{'type':'char','length':10},'stuid':{'type':'int','length':''}})
+#t = Table('student','stuname',{'stuname':{'type':'char','length':10},'stuid':{'type':'int','length':''}})
 #Error 4 
-#t.Insert({'stuname':'frank','stuid':'123'})
-
 #Error 2
-#t.Insert({'stuname':'frank','id':'123'})
-
 #Error 3
-#t.Insert({'stuname':'frank','stuid':102062115})
-#t.Insert({'stuname':'frank','stuid':102062116})
 #Error 1
-#t.Insert({'stuname':'frank','stuid':102062115})
-
 #Error 5
-t.Insert({'stuname':'ffrankfrank','stuid':102062115})
-t.__PrintData__()
+#t.__PrintData__()
