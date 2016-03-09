@@ -6,7 +6,10 @@ class Table :
         self.tableName = tableName
         self.primaryKey = primaryKey
         self.attributeList = attributeList
-
+        for attr in self.attributeList:
+            if attr['length'] > 40:
+                print "VarChar Length exceed 40"
+                return
         self.records = {}
 
     def Insert(self,Field,Value):
