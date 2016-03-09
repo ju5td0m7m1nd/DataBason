@@ -44,14 +44,22 @@ class Table :
 
     def CheckValid(self,newRecord):
         self.newRecord = newRecord
+        
+        if not self.CheckPrimaryKey():
+            return 3
         for r in self.newRecord:
             if not self.CheckUnknownColumn(r) :
                 return 2  
-            if not self.CheckTypeError(r) == True:
+            if not self.CheckTypeError(r) :
                 return 4
-            
-        
+            if not self.CheckVarLength(r) :
+                return 5
         return 1
+    def CheckPrimaryKey(self):
+        primaryAttr = self.newRecord[self.primaryKey]
+        if primaryAttr in self.records:
+            return False
+        return True
 
     def CheckTypeError(self, attribute):
         columnType = self.attributeList[attribute]['type']
@@ -62,7 +70,13 @@ class Table :
             if not type(self.newRecord[attribute]) is int:
                 return False
         return True
-    
+   
+    def CheckVarLength(self,attribute):
+        if type(self.newRecord[attribute]) is str:
+            if len(self.newRecord[attribute]) > self.attributeList[attribute]['length']:
+                return False
+        return True
+ 
     def CheckUnknownColumn(self,attribute):
         if not attribute in self.attributeList:
             return False
@@ -77,7 +91,7 @@ class Table :
         for r in self.records:
             print self.records[r]
 
-t = Table('student','',{'stuname':{'type':'char','length':'10'},'stuid':{'type':'int','length':''}})
+t = Table('student','stuname',{'stuname':{'type':'char','length':10},'stuid':{'type':'int','length':''}})
 #Error 4 
 #t.Insert({'stuname':'frank','stuid':'123'})
 
@@ -85,7 +99,11 @@ t = Table('student','',{'stuname':{'type':'char','length':'10'},'stuid':{'type':
 #t.Insert({'stuname':'frank','id':'123'})
 
 #Error 3
-
+#t.Insert({'stuname':'frank','stuid':102062115})
+#t.Insert({'stuname':'frank','stuid':102062116})
 #Error 1
 #t.Insert({'stuname':'frank','stuid':102062115})
-#t.__PrintData__()
+
+#Error 5
+t.Insert({'stuname':'ffrankfrank','stuid':102062115})
+t.__PrintData__()
