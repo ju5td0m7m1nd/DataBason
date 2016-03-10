@@ -1,9 +1,9 @@
-import pickle
 from lexer import Lexer
 from schema import Schema
 
 class Parser :
-   
+    maxVarcharLen = 40
+    
     def __init__(self, query):
         self.lex = Lexer(query)
     
@@ -51,6 +51,8 @@ class Parser :
             self.lex.eatKeyword('varchar')
             self.lex.eatDelim('(')
             num = self.lex.eatNum()
+            if num > self.maxVarcharLen or num <= 0:
+                raise RuntimeError('Invalid varchar length.')
             self.lex.eatDelim(')')
             if self.checkPrimaryKey():
                 schema.setPrimaryKey(name)
@@ -105,7 +107,12 @@ class Parser :
     
 
 # test
-#l = Parser('CREATE TABLE Student (Id INT primary key, Name VARCHAR(10))')
-l = Parser("insert into student (id, name) values (123, 'Mike')")
-d = l.updateCmd()
-print d
+#l = Parser('CREATE TABLE Student (Id INT primary key, Name VARCHAR(-10))')
+l = Parser("insert into student (id, name) values (-2147483648, 'Mike Portnoy 123')")
+d = {}
+#print l.lex.tokens
+try:
+    d = l.updateCmd()
+    print d
+except RuntimeError as e:
+    print e

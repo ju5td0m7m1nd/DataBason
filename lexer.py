@@ -7,6 +7,8 @@ class Lexer:
     keywords = ['create','table','insert','into','values',\
                'int','varchar','primary', 'key']
     errorMsg = 'Wrong SQL syntax!'
+    minInt = -2147483648
+    maxInt = 2147483647
 
     def __init__(self, s):
         self.tokens = []
@@ -20,6 +22,11 @@ class Lexer:
         return delim == self.tok
 
     def matchNum(self):
+        if self.matchDelim('-'): # handling negative number
+            if re.match('^\d+$', self.getNextTok()):
+                return True
+            else:
+                return False
         if re.match('^\d+$', self.tok):
             return True
         return False
@@ -44,12 +51,19 @@ class Lexer:
         if self.matchDelim(delim):
             self.nextToken()
         else:
-            print 'delim error' # throw exception
+            print 'delim error'
             raise RuntimeError(self.errorMsg)
 
     def eatNum(self):
         if self.matchNum():
-            num = int(self.tok)
+            num = 0
+            if self.matchDelim('-'):
+                self.eatDelim('-')
+                num = -int(self.tok)
+            else:
+                num = int(self.tok)
+            if num < self.minInt or num > self.maxInt:
+                raise RuntimeError('Integer out of bound.')
             self.nextToken()
             return num
         else:
@@ -80,9 +94,14 @@ class Lexer:
         else:
             print 'id error'
             raise RuntimeError(self.errorMsg)
-
+    
     def nextToken(self):
         if self.idx + 1 < len(self.tokens):
             self.idx = self.idx + 1
             self.tok = self.tokens[self.idx]
 
+    def getNextTok(self):
+        tok = self.tok
+        if self.idx + 1 < len(self.tokens):
+            tok =  self.tokens[self.idx+1]
+        return tok
