@@ -17,9 +17,9 @@ class Display(FloatLayout):
         self.colname.text = self.query_in.text
 
     def update(self):
-        integers_dict = {str(i): {'text': str(i)} for i in range(50)}
+        integers_dict = {str(i): {'text': str(i), 'id': str(i+100)} for i in range(50)}
         args_converter = lambda row_index, rec: {
-            'text': rec['text'],
+            'text': rec,
             'size_hint_y': None,
             'height': 25,
             'cls_dicts': [{
@@ -30,7 +30,7 @@ class Display(FloatLayout):
                             {
                                 'cls': ListItemLabel,
                                 'kwargs': {
-                                    'text': "col_1-{0}".format(rec['text']),
+                                    'text': "col_1-{0}".format(rec['id']),
                                     'font_size': 20}},
                             {
                                 'cls': ListItemLabel,
@@ -40,7 +40,7 @@ class Display(FloatLayout):
                             {
                                 'cls': ListItemLabel,
                                 'kwargs': {
-                                    'text': "col_3-{0}".format(rec['text']),
+                                    'text': "col_3-{0}".format(rec['id']),
                                     'font_size': 20}},
                             {
                                 'cls': ListItemLabel,
