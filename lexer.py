@@ -6,6 +6,7 @@ class Lexer:
     idx = 0
     keywords = ['create','table','insert','into','values',\
                'int','varchar','primary', 'key']
+    errorMsg = 'Wrong SQL syntax!'
 
     def __init__(self, s):
         self.tokens = []
@@ -31,11 +32,11 @@ class Lexer:
         return False
     
     def matchKeyword(self, keyword):
-        return keyword == self.tok and keyword in self.keywords
+        return keyword == self.tok.lower() and keyword in self.keywords
     
     def matchId(self):
-        if re.match('^[A-Za-z_]\w+', self.tok) and \
-            self.tok not in self.keywords:
+        if re.match('^[a-z_]\w*', self.tok.lower()) and \
+            self.tok.lower() not in self.keywords:
             return True
         return False
     
@@ -43,7 +44,8 @@ class Lexer:
         if self.matchDelim(delim):
             self.nextToken()
         else:
-            print 'error1' # throw exception
+            print 'delim error' # throw exception
+            raise RuntimeError(self.errorMsg)
 
     def eatNum(self):
         if self.matchNum():
@@ -51,7 +53,8 @@ class Lexer:
             self.nextToken()
             return num
         else:
-            print 'error2'
+            print 'num error'
+            raise RuntimeError(self.errorMsg)
 
     def eatVarchar(self):
         if self.matchVarchar():
@@ -59,21 +62,24 @@ class Lexer:
             self.nextToken()
             return char
         else:
-            print 'error3'
+            print 'varchar error'
+            raise RuntimeError(self.errorMsg)
 
     def eatKeyword(self, keyword):
         if self.matchKeyword(keyword):
             self.nextToken()
         else:
-            print 'error4'
+            print 'keyword error'
+            raise RuntimeError(self.errorMsg)
 
     def eatId(self):
         if self.matchId():
-            char = self.tok
+            char = self.tok.lower()
             self.nextToken()
             return char
         else:
-            print 'error5'
+            print 'id error'
+            raise RuntimeError(self.errorMsg)
 
     def nextToken(self):
         if self.idx + 1 < len(self.tokens):
