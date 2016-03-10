@@ -72,7 +72,7 @@ class Lexer:
 
     def eatVarchar(self):
         if self.matchVarchar():
-            char = self.tok
+            char = self.tok[1:-1]
             self.nextToken()
             return char
         else:
