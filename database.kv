@@ -1,7 +1,6 @@
 #:kivy 1.9
 
 <Display>:
-    coltitle: cols_name
     query_in: query_text_input
     data_box: inside_box_layout
 
@@ -10,14 +9,14 @@
         TextInput:
             id: query_text_input
             font_size: 20
-            size_hint: 0.8, 0.2
+            size_hint: 0.8, 0.4
             pos: root.x, root.top - self.height
-            hint_text: "put some text here"
+            hint_text: "Your SQL command here, please~"
 
         Button:
             id: send_button
             text: "send!"
-            size_hint: 0.2, 0.2
+            size_hint: 0.2, 0.4
             pos: root.x + query_text_input.width, root.top - self.height
             on_press: root.update()
 
@@ -25,12 +24,11 @@
         BoxLayout:
             orientation: "vertical"
             id: inside_box_layout
-            padding: 10
-            size_hint: 1, 0.8
+            padding: 15
+            size_hint: 1, 0.6
             
             Label:
-                font_size: 20
-                size_hint: 1, 0.1
-                id: cols_name
+                font_size: 40
+                #size_hint: 1, 0.o1
                 color: 0, 1, 0, 1
-                text: "\query me/\query me/"
+                text: "DATABASON"
