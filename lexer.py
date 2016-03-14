@@ -13,8 +13,11 @@ class Lexer:
     def __init__(self, s):
         self.tokens = []
         lexer = shlex.shlex(s)
-        for token in lexer:
-            self.tokens.append(str(token))
+        try:
+            for token in lexer:
+                self.tokens.append(str(token))
+        except ValueError as e:
+            raise RuntimeError(e)
         self.tokens.append('') # end token
         self.tok = self.tokens[self.idx]
     

@@ -59,6 +59,7 @@ class Database:
 '''
 db = Database()
 s ="CREATE TABLE Item (id int primary key, des varchar(20))" 
-s2 = "insert into Item (id) values (8"
+s2 = "insert into Item (id, des) values (8, 'hi, this is an item"
 db.processQuery(s)
-db.processQuery(s2)'''
+db.processQuery(s2)
+'''
