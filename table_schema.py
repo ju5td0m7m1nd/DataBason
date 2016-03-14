@@ -5,6 +5,9 @@ class Table :
         The members of the class:
             tableName : The name of the table
             primaryKey : Attribute name of the primary key; '' if not assigned
+            attributeList: A dictionary storing the schema
+                key: attr name
+                value: {type->(int/char), length->(number)}
             records: A dictionary storing all the tuples in the table. 
                 key: primary key, auto-incremented number if no primary key 
                 value: a field->value dictionary
@@ -21,7 +24,9 @@ class Table :
             return    
         newRecord = {}
         for f in Field:
-           newRecord[f] = Value[Field.index(f)]
+            if f in newRecord:
+                raise RuntimeError('Repeated field name: '+f)
+            newRecord[f] = Value[Field.index(f)]
         ErrorCode = self.CheckValid(newRecord)
         if ErrorCode == 1 :
             record = self.CreateRecordObject(newRecord)
