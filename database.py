@@ -26,6 +26,7 @@ class Database:
             table = Table(data['tableName'], data['primaryKey'], data['fields'])
             self.addTable(table)
             print 'created table: ', data
+            return table
         elif cmd=='insert':
             data = parser.parse()
             if data['tableName'] not in self.tables:
@@ -34,6 +35,7 @@ class Database:
             table.Insert(data['fields'], data['values'])
             self.saveTable(table, table.tableName)
             print 'cur table: ', table.records
+            return table.records
         else:
             raise RuntimeError('Unkown keywords.')
 
@@ -52,7 +54,7 @@ class Database:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 ## test
 db = Database()
-s = 'CREATE TABLE Student (Id INT primary key, Name VARCHAR(10))'
-s2 = "insert into student (id, name) values (-2147483648, 'Mike')"
+s = 'CREATE ssTABLE Student (Id INT primary key, Name VARCHAR(10))'
+#s2 = "insert into student (id, name) values (-2147483648, 'Mike')"
 db.processQuery(s)
-db.processQuery(s2)
+#db.processQuery(s2)

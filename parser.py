@@ -20,8 +20,7 @@ class Parser :
 
     def create(self):
         self.lex.eatKeyword('create')
-        if self.lex.matchKeyword('table'):
-            return self.createTable()
+        return self.createTable()
    
     def createTable(self):
         self.lex.eatKeyword('table')
