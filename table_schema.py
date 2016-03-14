@@ -25,7 +25,8 @@ class Table :
             if len(Value) == len(self.attributeList): 
                 for f in self.attributeList:
                     newRecord[f] = Value[self.attributeList.keys().index(f)]
-            raise RuntimeError('Wrong number of value.')
+            else:
+                raise RuntimeError('Wrong number of value.')
         else:    
             if not self.CheckFieldMatch(Field,Value):
                 print "Field, Value doesn't match"
