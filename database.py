@@ -56,8 +56,8 @@ class Database:
         with open(self.file_dir + name + '.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 ## test
-db = Database()
+'''db = Database()
 s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
 s2 = "insert into Item values (8, 'hi', 100)"
 db.processQuery(s)
-db.processQuery(s2)
+db.processQuery(s2)'''
