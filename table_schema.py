@@ -1,3 +1,4 @@
+from collections import OrderedDict
 class Table :
     '''
         After parsing the SQL string, use this class to create a table structure in memory.
@@ -19,14 +20,21 @@ class Table :
         self.records = {}
 
     def Insert(self,Field,Value):
-        if not self.CheckFieldMatch(Field,Value):
-            print "Field, Value doesn't match"
-            return    
-        newRecord = {}
-        for f in Field:
-            if f in newRecord:
-                raise RuntimeError('Repeated field name: '+f)
-            newRecord[f] = Value[Field.index(f)]
+        newRecord = {} 
+        if not Field: 
+            if len(Value) == len(self.attributeList): 
+                for f in self.attributeList:
+                    newRecord[f] = Value[self.attributeList.keys().index(f)]
+            raise RuntimeError('Wrong number of value.')
+        else:    
+            if not self.CheckFieldMatch(Field,Value):
+                print "Field, Value doesn't match"
+                raise RuntimeError("Field, value doesn't match.")
+            for f in Field:
+                if f in newRecord:
+                    raise RuntimeError('Repeated field name: '+f)
+                newRecord[f] = Value[Field.index(f)]
+            
         ErrorCode = self.CheckValid(newRecord)
         if ErrorCode == 1 :
             record = self.CreateRecordObject(newRecord)
