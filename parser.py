@@ -2,23 +2,25 @@ from lexer import Lexer
 from schema import Schema
 
 class Parser :
+    '''
+        Called by database.py
+        process create and insert SQL command
+        raise an exception on syntax error
+    '''
     maxVarcharLen = 40
     
     def __init__(self, query):
         self.lex = Lexer(query)
     
-    def updateCmd(self):
+    def parse(self):
         if self.lex.matchKeyword('create'):
             return self.create()
-        elif self.lex.matchKeyword('insert'):
-            return self.insert()
         else:
-            raise RuntimeError('Unsupported SQL query.')
+            return self.insert()
 
     def create(self):
         self.lex.eatKeyword('create')
-        if self.lex.matchKeyword('table'):
-            return self.createTable()
+        return self.createTable()
    
     def createTable(self):
         self.lex.eatKeyword('table')
@@ -108,11 +110,12 @@ class Parser :
 
 # test
 #l = Parser('CREATE TABLE Student (Id INT primary key, Name VARCHAR(-10))')
-l = Parser("insert into student (id, name) values (-2147483648, 'Mike Portnoy 123')")
+'''l = Parser("insert into student (id, name) values (-2147483648, 'Mike Portnoy 123')")
 d = {}
 #print l.lex.tokens
 try:
-    d = l.updateCmd()
+    d = l.parse()
     print d
 except RuntimeError as e:
     print e
+'''

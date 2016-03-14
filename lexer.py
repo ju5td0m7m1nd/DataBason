@@ -84,7 +84,7 @@ class Lexer:
             self.nextToken()
         else:
             print 'keyword error'
-            raise RuntimeError(self.errorMsg)
+            raise RuntimeError('Unkown keyword')
 
     def eatId(self):
         if self.matchId():

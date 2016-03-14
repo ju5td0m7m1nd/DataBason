@@ -1,5 +1,3 @@
-import pickle
-
 class Table :
     '''
         After parsing the SQL string, use this class to create a table structure in memory.
@@ -34,14 +32,19 @@ class Table :
                 self.records[pkAttr] = record
         elif ErrorCode == 2:
             print "unknown column"
+            raise RuntimeError("unknown column")
         elif ErrorCode == 3:
             print "duplicated primary key"
+            raise RuntimeError("duplicated primary key")
         elif ErrorCode == 4:
             print "type error"
+            raise RuntimeError("type error")
         elif ErrorCode == 5:
             print "varchar length incorrect"
+            raise RuntimeError("varchar length incorrect")
         elif ErrorCode == 6:
             print "missing primary key"
+            raise RuntimeError("missing primary key")
         else:
             print "error" 
 
@@ -119,7 +122,7 @@ class Table :
     def __PrintData__(self):
         for r in self.records:
             print self.records[r]
-
+'''
 t = Table('student','stuid',{'stuname':{'type':'char','length':10},'stuid':{'type':'int','length':''}})
 t.Insert(['stuname'],['Douglas'])
 t.Insert(['stuname'],['Mike',11])
@@ -127,7 +130,7 @@ t.Insert(['stuid','stuname'],['Mike',12])
 t.Insert(['stuname','stuid'],['Mikeeeeeeeeeeeeee',13])
 t.Insert(['stun','stuid'],['Mike',14])
 t.Insert(['stuname','stuid'],['Mike',10])
-t.__PrintData__()
+t.__PrintData__()'''
 #Error 4 
 #Error 2
 #Error 3
