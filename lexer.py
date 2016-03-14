@@ -15,7 +15,7 @@ class Lexer:
         lexer = shlex.shlex(s)
         for token in lexer:
             self.tokens.append(str(token))
-        self.tokens.append(None) # end token
+        self.tokens.append('') # end token
         self.tok = self.tokens[self.idx]
     
     def matchDelim(self, delim):
@@ -52,7 +52,8 @@ class Lexer:
             self.nextToken()
         else:
             print 'delim error'
-            raise RuntimeError('Invalid delimiter: '+self.tok)
+
+            raise RuntimeError('Invalid delimiter: \''+self.tok+'\'')
 
     def eatNum(self):
         if self.matchNum():
@@ -77,7 +78,7 @@ class Lexer:
             return char
         else:
             print 'varchar error'
-            raise RuntimeError('Invalid varchar: ' + self.tok)
+            raise RuntimeError('Invalid varchar: \'' + self.tok + '\'')
 
     def eatKeyword(self, keyword):
         if self.matchKeyword(keyword):
