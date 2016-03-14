@@ -16,10 +16,16 @@
         Button:
             id: send_button
             text: "send!"
-            size_hint: 0.2, 0.4
+            size_hint: 0.2, 0.3
             pos: root.x + query_text_input.width, root.top - self.height
             on_press: root.update()
 
+        Button:
+            id: mute_button
+            text: "mute/unmute"
+            size_hint: 0.2, 0.1
+            pos: root.x + query_text_input.width, root.top - self.height - send_button.height
+            on_press: root.mute()
 
         BoxLayout:
             orientation: "vertical"
