@@ -1,7 +1,7 @@
 import glob
 import pickle
 import re
-from parser import Parser
+from sqlparser import Parser
 from table_schema import Table
 
 class Database:
