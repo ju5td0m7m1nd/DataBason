@@ -1,7 +1,7 @@
 import glob
 import pickle
 import re
-from parser import Parser
+from sqlparser import Parser
 from table_schema import Table
 
 class Database:
@@ -33,18 +33,18 @@ class Database:
             self.command = 'insert'
             data = parser.parse()
             if data['tableName'] not in self.tables:
-                raise RuntimeError('Unkown table. ')
+                raise RuntimeError('Unkown table: ' + data['tableName'])
             table = self.tables[data['tableName']]
             table.Insert(data['fields'], data['values'])
             self.saveTable(table, table.tableName)
             print 'cur table: ', table.records
             return table
         else:
-            raise RuntimeError('Unkown keywords.')
+            raise RuntimeError('Unkown keyword: ' + cmd)
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
-            raise RuntimeError('Duplicated table name.')
+            raise RuntimeError('Duplicated table name: ' + newTable.tableName)
         self.tables[newTable.tableName] = newTable
         self.saveTable(newTable, newTable.tableName)
 
@@ -56,10 +56,8 @@ class Database:
         with open(self.file_dir + name + '.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 ## test
-'''
-db = Database()
-s = 'CREATE ssTABLE Student (Id INT primary key, Name VARCHAR(10))'
-#s2 = "insert into student (id, name) values (-2147483648, 'Mike')"
+'''db = Database()
+s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
+s2 = "insert into Item values (8, 'hi', 100)"
 db.processQuery(s)
-#db.processQuery(s2)
-'''
+db.processQuery(s2)'''

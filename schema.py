@@ -1,9 +1,9 @@
 import re
-
+from collections import OrderedDict
 class Schema:
     
     def __init__(self):
-        self.fields = {}
+        self.fields = OrderedDict()
         self.primaryKey = ''
     
     def setPrimaryKey(self, fieldName):

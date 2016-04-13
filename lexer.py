@@ -13,9 +13,12 @@ class Lexer:
     def __init__(self, s):
         self.tokens = []
         lexer = shlex.shlex(s)
-        for token in lexer:
-            self.tokens.append(str(token))
-        self.tokens.append(None) # end token
+        try:
+            for token in lexer:
+                self.tokens.append(str(token))
+        except ValueError as e:
+            raise RuntimeError(e)
+        self.tokens.append('') # end token
         self.tok = self.tokens[self.idx]
     
     def matchDelim(self, delim):
@@ -52,7 +55,8 @@ class Lexer:
             self.nextToken()
         else:
             print 'delim error'
-            raise RuntimeError(self.errorMsg)
+
+            raise RuntimeError('Invalid delimiter: \''+self.tok+'\'')
 
     def eatNum(self):
         if self.matchNum():
@@ -68,7 +72,7 @@ class Lexer:
             return num
         else:
             print 'num error'
-            raise RuntimeError(self.errorMsg)
+            raise RuntimeError('Invalid number: ' + self.tok)
 
     def eatVarchar(self):
         if self.matchVarchar():
@@ -77,14 +81,14 @@ class Lexer:
             return char
         else:
             print 'varchar error'
-            raise RuntimeError(self.errorMsg)
+            raise RuntimeError('Invalid varchar: \'' + self.tok + '\'')
 
     def eatKeyword(self, keyword):
         if self.matchKeyword(keyword):
             self.nextToken()
         else:
             print 'keyword error'
-            raise RuntimeError('Unkown keyword')
+            raise RuntimeError('Unkown keyword: ' + self.tok)
 
     def eatId(self):
         if self.matchId():
@@ -93,7 +97,7 @@ class Lexer:
             return char
         else:
             print 'id error'
-            raise RuntimeError(self.errorMsg)
+            raise RuntimeError('Invalid identifier: ' + self.tok)
     
     def nextToken(self):
         if self.idx + 1 < len(self.tokens):
