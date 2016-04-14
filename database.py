@@ -39,6 +39,9 @@ class Database:
             self.saveTable(table, table.tableName)
             print 'cur table: ', table.records
             return table
+        elif cmd=='select':
+            self.command = 'select'
+            data = parser.parse()
         else:
             raise RuntimeError('Unkown keyword: ' + cmd)
 

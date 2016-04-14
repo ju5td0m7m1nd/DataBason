@@ -5,7 +5,8 @@ class Lexer:
     tokens = []
     idx = 0
     keywords = ['create','table','insert','into','values',\
-               'int','varchar','primary', 'key']
+               'int','varchar','primary', 'key','select', 'from', 'where',\
+                'and', 'or', 'as', 'count', 'sum']
     errorMsg = 'Wrong SQL syntax!'
     minInt = -2147483648
     maxInt = 2147483647
@@ -53,6 +54,7 @@ class Lexer:
     def eatDelim(self, delim):
         if self.matchDelim(delim):
             self.nextToken()
+            return delim
         else:
             print 'delim error'
 
@@ -76,7 +78,7 @@ class Lexer:
 
     def eatVarchar(self):
         if self.matchVarchar():
-            char = self.tok[1:-1]
+            char = self.tok #self.tok[1:-1]
             self.nextToken()
             return char
         else:
@@ -86,6 +88,7 @@ class Lexer:
     def eatKeyword(self, keyword):
         if self.matchKeyword(keyword):
             self.nextToken()
+            return keyword
         else:
             print 'keyword error'
             raise RuntimeError('Unkown keyword: ' + self.tok)
