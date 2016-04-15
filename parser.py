@@ -29,8 +29,8 @@ class Parser :
         if self.lex.matchKeyword('where'):
             self.lex.eatKeyword('where')
             pred = self.predicate()
-        print {'select':projs, 'from':tables, 'where':pred}
-#return {'select':projs, 'from':tables, 'where':pred}
+        #print {'select':projs, 'from':tables, 'where':pred}
+        return {'select':projs, 'from':tables, 'where':pred}
 
     def projectList(self):
         fieldNames = []
@@ -103,8 +103,10 @@ class Parser :
     def expression(self):
         if self.lex.matchId():
             return self.projectField()
+        elif self.lex.matchNum():
+            return self.lex.eatNum()
         else:
-            return self.const()
+            return '"'+self.lex.eatVarchar()+'"'
 
     def operator(self):
         op = ''
