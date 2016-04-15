@@ -1,4 +1,21 @@
 import database
+
+
+'''
+Handle query flow :
+
+1. load table with the attribute in query['from'].
+    *Error Raise : table not exist.
+    *Error Raise : table alias duplicate.
+2. Use the condition in query['where'], filter the columns.
+    *Error Raise : check columns from non-loaded table.
+    *Error Raise : check non-exist columns.
+3. Check query['select'], determine which columns should be return (display).
+    *Error Raise : select non-exist columns.
+    *Error Raise : select non-loaded table.
+
+'''
+
 class HandleSelect:
     query = {}
     '''

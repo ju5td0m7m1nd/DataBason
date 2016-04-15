@@ -29,7 +29,8 @@ class TestHandleSelect(unittest.TestCase):
         returnTable = hs.loadTable(query['from'])
         expectedTable = {'a':db.tables['students'],'teachers':db.tables['teachers'],}
         self.assertEqual( returnTable, expectedTable)
- 
+
+    def test_Where(self): 
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()
