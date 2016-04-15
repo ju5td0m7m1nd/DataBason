@@ -13,12 +13,20 @@ class HandleSelect:
     def loadTable(self,queryFrom):
         returnTables = {}
         db = self.db
-        for table in queryFrom :
+        for unitquery in queryFrom :
             # Check table exist in db.tables.
-            tableName = table['tableName']
+            tableName = unitquery['tableName']
             if db.tables[tableName]:
-                returnTables[tableName] = db.tables[tableName]
+                # Check if use alias 
+                if not unitquery['alias'] == "":
+                    # Check if alias duplicate
+                    if unitquery['alias'] in returnTables:
+                        raise RuntimeError("Alias name duplicate");
+                    else:
+                        returnTables[unitquery['alias']] = db.tables[tableName]
+                else:
+                    returnTables[tableName] = db.tables[tableName]
             else:
                 raise RuntimeError ("Select from table which doesn't exist") 
-            
+         
         return returnTables 
