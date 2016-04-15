@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from HandleSelect import *
 class Table :
     '''
         After parsing the SQL string, use this class to create a table structure in memory.
@@ -136,18 +137,4 @@ class Table :
     def __PrintData__(self):
         for r in self.records:
             print self.records[r]
-'''
-t = Table('student','stuid',{'stuname':{'type':'char','length':10},'stuid':{'type':'int','length':''}})
-t.Insert(['stuname'],['Douglas'])
-t.Insert(['stuname'],['Mike',11])
-t.Insert(['stuid','stuname'],['Mike',12])
-t.Insert(['stuname','stuid'],['Mikeeeeeeeeeeeeee',13])
-t.Insert(['stun','stuid'],['Mike',14])
-t.Insert(['stuname','stuid'],['Mike',10])
-t.__PrintData__()'''
-#Error 4 
-#Error 2
-#Error 3
-#Error 1
-#Error 5
-#t.__PrintData__()
+

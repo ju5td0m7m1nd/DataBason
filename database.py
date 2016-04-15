@@ -60,8 +60,11 @@ class Database:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 ## test
 if __name__ == '__main__':
+    print"NO"
     db = Database()
-    s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
-    s2 = "insert into Item values (8, 'hi', 100)"
-    db.processQuery(s)
-    db.processQuery(s2)
+    #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
+    #s2 = "insert into Item values (8, 'hi', 100)"
+    #db.processQuery(s)
+    #db.processQuery(s2)
+    select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
+    db.processQuery(select)
