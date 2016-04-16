@@ -99,16 +99,16 @@ class TestHandleSelect(unittest.TestCase):
 
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         exp1 = self.hs.determineExpression('teachers.name')
-        exp2 = self.hs.determineExpression('teacherName')
-        returnDict = self.hs.filterRow(exp1,exp2) 
+        exp2 = self.hs.determineExpression('teachername')
+        returnDict = self.hs.filterRow(exp1,exp2,"=") 
         expected = {'students': 
-                        {   1 : {'name':'frank','teacherName':'Jason Chang'},
-                            3 : {'name':'Su4', 'teacherName':'Sun Hong Lai'},
-                            4 : {'name':'Douglas', 'teacherName':'Sun Hong Wu'},
+                        {   
+                            3 : {'id':3,'name':'Su4', 'teachername':'Sun Hong Lai'},
+                            4 : {'id':4,'name':'Douglas', 'teachername':'Sun Hong Wu'},
                         },
                     'teachers':
-                        {   999 : {'name':'Sun Hong Wu'},
-                            888 : {'name':'Sun Hong Lai'},
+                        {   999 : {'id':999,'name':'Sun Hong Wu'},
+                            888 : {'id':888,'name':'Sun Hong Lai'},
                         }
                    }
         for t in expected:
@@ -116,16 +116,16 @@ class TestHandleSelect(unittest.TestCase):
             table = expected[t]
             for key in table :
                 self.assertIn(key,expected[t])
-                self.assertEqual(table[key],expected[t][key])
+                self.assertEqual(table[key],returnDict[t][key])
     def test_FilterRow_String(self):
 
             self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
             exp1 = self.hs.determineExpression('teachers.name')
             exp2 = self.hs.determineExpression('"Sun Hong Lai"')
-            returnDict = self.hs.filterRow(exp1,exp2) 
+            returnDict = self.hs.filterRow(exp1,exp2,"=") 
             expected = {'teachers':
                             {
-                                888 : {'name':'Sun Hong Lai'},
+                                888 : {'id':888,'name':'Sun Hong Lai'},
                             }
                        }
             for t in expected:
@@ -133,8 +133,29 @@ class TestHandleSelect(unittest.TestCase):
                 table = expected[t]
                 for key in table :
                     self.assertIn(key,expected[t])
-                    self.assertEqual(table[key],expected[t][key])
+                    self.assertEqual(table[key],returnDict[t][key])
+    def test_FilterRow_Int(self):
+
+            self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+            exp1 = self.hs.determineExpression('teachers.id')
+            exp2 = self.hs.determineExpression(100)
+            returnDict = self.hs.filterRow(exp1,exp2,">") 
+            expected = {'teachers':
+                            {
+                                888 : {'id':888,'name':'Sun Hong Lai'},
+                                999 : {'id':999,'name':'Sun Hong Wu'},
+                            }
+                       }
+            for t in expected:
+                self.assertIn(t,returnDict)
+                table = expected[t]
+                self.assertEqual(len(table),len(returnDict[t]))
+                for key in table :
+                    self.assertIn(key,expected[t])
+                    self.assertEqual(table[key],returnDict[t][key])
         
+   
+       
    
 
 if __name__ == '__main__' and __package__ is None:

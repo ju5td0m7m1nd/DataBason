@@ -70,35 +70,65 @@ class HandleSelect:
                     #Directly do logical operation
                     pass 
                 else:
-                    filterRow(exp1,exp2) 
+                    filterRow(exp1,exp2,op) 
  
         return self.returnTables
     '''
     Return a filtered dict
     '''
 
-    def filterRow(self, exp1,exp2):
+    def filterRow(self, exp1,exp2,op):
             #Create a new dict to store compare results.
+            #Init
             newTable = {}
-        
+            for table in self.returnTables:
+                newTable[table] = {}
             if type(exp2) is dict:
                 #Iterate dict to compare.
                 for key1 in exp1 :
                     value1 = exp1[key1]
                     for key2 in exp2:
+                        flag = False
                         value2 = exp2[key2]
-                        if value1['value'] == value2['value']:
+                        if op == "=":
+                            if value1['value'] == value2['value']:
+                                flag = True 
+                        elif op == ">":
+                            if value1['value'] > value2['value']:
+                                flag = True 
+                        
+                        elif op == "<":
+                            if value1['value'] < value2['value']:
+                                flag = True 
+                        else :
+                            raise RuntimeError("Invalid operation " +op+" ")
+                        if flag :
                             tableName_exp1 = value1['tableName']
                             tableName_exp2 = value2['tableName']
-                            newTable[tableName_exp1] = self.returnTables[tableName_exp1].records[key1]
-                            newTable[tableName_exp2] = self.returnTables[tableName_exp2].records[key2]
+                            newTable[tableName_exp1][key1] = self.returnTables[tableName_exp1].records[key1]
+                            newTable[tableName_exp2][key2] = self.returnTables[tableName_exp2].records[key2]
+
             else:
                 for key in exp1 :
                     value = exp1[key]
-                    if exp1[key]['value'] == exp2:
+                    flag = False
+                    if op == "=":
+                        if exp1[key]['value'] == exp2:
+                            flag = True
+                    elif op == ">":
+                        if exp1[key]['value'] > exp2:
+                            flag = True
+                    elif op == "<":
+                        if exp1[key]['value'] < exp2:
+                            flag = True
+                    else :
+                        raise RuntimeError("Invalid operation "+op+" ")
+                    if flag:
                         tableName = exp1[key]['tableName']
-                        newTable[tableName] = self.returnTables[tableName].records[key]
+                        newTable[tableName][key] = self.returnTables[tableName].records[key]
             return newTable
+
+
     '''
     Exp may has these type :
     1. int
