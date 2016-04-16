@@ -9,7 +9,6 @@ class TestHandleSelect(unittest.TestCase):
             self.db.processQuery('CREATE TABLE students (id int primary key, name varchar(20), teachername varchar(20))') 
             self.db.processQuery('CREATE TABLE teachers (id int primary key, name varchar(20))')    
             self.db.processQuery('insert into students values (1, "frank", "Jason Chang")')      
-            self.db.processQuery('insert into students values (2, "Mark", "John Cena")')      
             self.db.processQuery('insert into students values (3, "Su4", "Sun Hong Lai")')      
             self.db.processQuery('insert into students values (4, "Douglas", "Sun Hong Wu")')      
             self.db.processQuery("insert into teachers values (999, 'Sun Hong Wu')")      
@@ -79,7 +78,6 @@ class TestHandleSelect(unittest.TestCase):
         exp = "teacherName"
         expected = {
                     1:{'tableName':'students','value':'Jason Chang'},
-                    2:{'tableName':'students','value':'John Cena'},
                     3:{'tableName':'students','value':'Sun Hong Lai'},
                     4:{'tableName':'students','value':'Sun Hong Wu'}
                     }   
@@ -97,6 +95,47 @@ class TestHandleSelect(unittest.TestCase):
         exp = 1
         returnInt = self.hs.determineExpression(exp)
         self.assertEqual(returnInt, 1) 
+    def test_FilterRow_twoTable(self):
+
+        self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+        exp1 = self.hs.determineExpression('teachers.name')
+        exp2 = self.hs.determineExpression('teacherName')
+        returnDict = self.hs.filterRow(exp1,exp2) 
+        expected = {'students': 
+                        {   1 : {'name':'frank','teacherName':'Jason Chang'},
+                            3 : {'name':'Su4', 'teacherName':'Sun Hong Lai'},
+                            4 : {'name':'Douglas', 'teacherName':'Sun Hong Wu'},
+                        },
+                    'teachers':
+                        {   999 : {'name':'Sun Hong Wu'},
+                            888 : {'name':'Sun Hong Lai'},
+                        }
+                   }
+        for t in expected:
+            self.assertIn(t,returnDict)
+            table = expected[t]
+            for key in table :
+                self.assertIn(key,expected[t])
+                self.assertEqual(table[key],expected[t][key])
+    def test_FilterRow_String(self):
+
+            self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+            exp1 = self.hs.determineExpression('teachers.name')
+            exp2 = self.hs.determineExpression('"Sun Hong Lai"')
+            returnDict = self.hs.filterRow(exp1,exp2) 
+            expected = {'teachers':
+                            {
+                                888 : {'name':'Sun Hong Lai'},
+                            }
+                       }
+            for t in expected:
+                self.assertIn(t,returnDict)
+                table = expected[t]
+                for key in table :
+                    self.assertIn(key,expected[t])
+                    self.assertEqual(table[key],expected[t][key])
+        
+   
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()
