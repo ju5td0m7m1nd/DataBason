@@ -53,10 +53,10 @@ class HandleSelect:
        
         for c in condition:  
             if c :
-                exp1 = c['exp1']
-                exp2 = c['exp2']
+                exp1 = self.determineExpression(c['exp1'])
+                exp2 = self.determineExpression(c['exp2'])
                 op = c['operator']
-  
+                 
         return self.returnTables
 
     '''
@@ -91,7 +91,7 @@ class HandleSelect:
                     expDict = {}
                     records = self.returnTables[prefix].records
                     for row in records:    
-                        expDict[row] = records[row][name]
+                        expDict[row] = {'tableName':prefix,'value':records[row][name]}
                     return expDict
                 else:
                     raise RuntimeError ("Column %s not in Table %s",name,prefix)
@@ -116,8 +116,9 @@ class HandleSelect:
                     raise RuntimeError ("No match column")
                 else:
                     expDict = {}
-                    for row in self.returnTables[tableName].records:
-                        expDict[row] = self.returnTables[tableName].records[row][exp]
+                    records = self.returnTables[tableName].records
+                    for row in records:
+                        expDict[row] = {'tableName':tableName,'value':records[row][exp]}
                     return expDict                
   
             else :

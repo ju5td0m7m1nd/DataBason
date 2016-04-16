@@ -51,7 +51,10 @@ class TestHandleSelect(unittest.TestCase):
     '''
     def test_DetermineExp(self):
         exp = "teachers.name"
-        expected = {999:'Sun Hong Wu',888:'Sun Hong Lai'}   
+        expected = {
+                    999:{'tableName':'teachers','value':'Sun Hong Wu'},
+                    888:{'tableName':'teachers','value':'Sun Hong Lai'}
+                    }   
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         returnDict = self.hs.determineExpression(exp)
         self.assertEqual(len(returnDict),len(expected))
@@ -61,7 +64,10 @@ class TestHandleSelect(unittest.TestCase):
     def test_DetermineExp_Alias(self):    
         # name with alias
         exp = "t.name"
-        expected = {999:'Sun Hong Wu',888:'Sun Hong Lai'}   
+        expected = {
+                    999:{'tableName':'t','value':'Sun Hong Wu'},
+                    888:{'tableName':'t','value':'Sun Hong Lai'}
+                    }   
         self.hs.loadTable([{'alias':'t','tableName':'teachers'},{'alias':'','tableName':'students'}])
         returnDict = self.hs.determineExpression(exp)
         self.assertEqual(len(returnDict),len(expected))
@@ -71,7 +77,12 @@ class TestHandleSelect(unittest.TestCase):
     def test_DetermineExp_NoPrefix(self):
         # name with no prefix 
         exp = "teacherName"
-        expected = {1:'Jason Chang',2:'John Cena',3:'Sun Hong Lai',4:'Sun Hong Wu'}   
+        expected = {
+                    1:{'tableName':'students','value':'Jason Chang'},
+                    2:{'tableName':'students','value':'John Cena'},
+                    3:{'tableName':'students','value':'Sun Hong Lai'},
+                    4:{'tableName':'students','value':'Sun Hong Wu'}
+                    }   
         self.hs.loadTable([{'alias':'t','tableName':'teachers'},{'alias':'','tableName':'students'}])
         returnDict = self.hs.determineExpression(exp)
         self.assertEqual(len(returnDict),len(expected))
