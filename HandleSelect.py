@@ -66,17 +66,22 @@ class HandleSelect:
     3. a.column
     4. column
     So we have to determine which type it is
+    
+    #ISSUE all of column is lowercase??
+
     '''
 
     def determineExpression(self,exp):
-        # exp is a string.
-        if '\"' in exp: 
-            return exp.split('\"')[1].split('\"')[0]
+        
         # exp is number.
-        elif type(exp) is int:
+        if type(exp) is int:
             return exp
-        # exp with a prefix.
+        # exp is a string.
+        elif '\"' in exp: 
+            return exp.split('\"')[1].split('\"')[0]
+                # exp with a prefix.
         elif '.' in exp :
+            exp = exp.lower()
             prefix = exp.split('.')[0]
             name = exp.split('.')[1]
             # Check prefix exist
@@ -87,30 +92,33 @@ class HandleSelect:
                     records = self.returnTables[prefix].records
                     for row in records:    
                         expDict[row] = records[row][name]
-                    print records[row][name]
                     return expDict
                 else:
                     raise RuntimeError ("Column %s not in Table %s",name,prefix)
             else :
                 raise RuntimeError ("Table: " + prefix + " doesn't be loaded")
         else :
+            exp = exp.lower()
             # No prefix need to check exist in either table a or b.
             if len(self.returnTables) > 1:
                 # A flag to record if there are more than 1 table have some column.
                 flag = 0
                 tableName = '' 
                 for table in self.returnTables:
-                    if exp in table:
+                    tableSchema = self.returnTables[table]
+                    if exp in tableSchema.attributeList:
                         flag = flag + 1 
                         tableName = table
                 # if flag more than one, raise error
                 if flag > 1 :
-                    raise RuntimeError ("Column %s not distinct",exp)
-                else :
+                    raise RuntimeError ("Column " + exp +" not distinct")
+                elif flag == 0 :
+                    raise RuntimeError ("No match column")
+                else:
                     expDict = {}
-                    for row in self.returnTables[tableName]:
-                        expDict[row] = self.returnTables[tableName][exp]
-                return expDict                
+                    for row in self.returnTables[tableName].records:
+                        expDict[row] = self.returnTables[tableName].records[row][exp]
+                    return expDict                
   
             else :
                 # check column in table

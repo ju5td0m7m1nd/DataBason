@@ -6,7 +6,7 @@ class TestHandleSelect(unittest.TestCase):
         self.db = database.Database()
         self.hs = HandleSelect.HandleSelect(self.db)    
         if not len(self.db.tables) > 0:
-            self.db.processQuery('CREATE TABLE students (id int primary key, name varchar(20), teacherName varchar(20))') 
+            self.db.processQuery('CREATE TABLE students (id int primary key, name varchar(20), teachername varchar(20))') 
             self.db.processQuery('CREATE TABLE teachers (id int primary key, name varchar(20))')    
             self.db.processQuery('insert into students values (1, "frank", "Jason Chang")')      
             self.db.processQuery('insert into students values (2, "Mark", "John Cena")')      
@@ -58,7 +58,34 @@ class TestHandleSelect(unittest.TestCase):
         for key in returnDict :
             self.assertIn(key, expected)
             self.assertEqual(returnDict[key],expected[key])
-         
+    def test_DetermineExp_Alias(self):    
+        # name with alias
+        exp = "t.name"
+        expected = {999:'Sun Hong Wu',888:'Sun Hong Lai'}   
+        self.hs.loadTable([{'alias':'t','tableName':'teachers'},{'alias':'','tableName':'students'}])
+        returnDict = self.hs.determineExpression(exp)
+        self.assertEqual(len(returnDict),len(expected))
+        for key in returnDict :
+            self.assertIn(key, expected)
+            self.assertEqual(returnDict[key],expected[key])
+    def test_DetermineExp_NoPrefix(self):
+        # name with no prefix 
+        exp = "teacherName"
+        expected = {1:'Jason Chang',2:'John Cena',3:'Sun Hong Lai',4:'Sun Hong Wu'}   
+        self.hs.loadTable([{'alias':'t','tableName':'teachers'},{'alias':'','tableName':'students'}])
+        returnDict = self.hs.determineExpression(exp)
+        self.assertEqual(len(returnDict),len(expected))
+        for key in returnDict :
+            self.assertIn(key, expected)
+            self.assertEqual(returnDict[key],expected[key])
+    def test_DetermineExp_String(self):
+        exp = '"Sun Hong Wu"'
+        returnString = self.hs.determineExpression(exp) 
+        self.assertEqual(returnString,"Sun Hong Wu")                 
+    def test_DetermineExp_Ing(self):
+        exp = 1
+        returnInt = self.hs.determineExpression(exp)
+        self.assertEqual(returnInt, 1) 
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()
