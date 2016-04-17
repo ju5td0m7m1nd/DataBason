@@ -76,7 +76,6 @@ class HandleSelect:
                         compareResult.append(exp1 < exp2 )
                 else:
                     compareResult.append(self.filterRow(exp1,exp2,op))
-   
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
@@ -109,53 +108,96 @@ class HandleSelect:
             else:
                 raise RuntimeError ('Merge with unknow type')
         else :
+            #take one result as standard
+            for r in compareResult:
+                if type(r) is dict :
+                    resultStandard = r
+                    break
+                else:
+                    resultStandard = None
+            # Fist of all , if resultStandard doesn't assign any list.
+            # Which means all of the results is bool.
+
             if logic == 'and':
-                    #take one result as standard
-                    for r in compareResult:
-                        if type(r) is dict :
-                            resultStandard = r
-                            break
-                        else:
-                            resultStandard = None
-                    # Fist of all , if resultStandard doesn't assign any list.
-                    # Which means all of the results is bool.
-                    if not resultStandard :
-                        BOOLFLAG = True
-                        for r in compareResult:
-                            BOOLFLAG = BOOLFLAG and r
-                        if BOOLFLAG :
-                            return
-                        else :
-                            for table in self.returnTables:
-                                self.returnTables[table].records = {}
-                            return
-                    else: 
-                        #check if row also exist in other result.
-                        for t in resultStandard:
-                            pkList = []
-                            for key in resultStandard[t]:
-                                pkList.append(key)
-                            for cr in compareResult:
-                                if type(cr) is bool:
-                                    # if "AND" with False, return empty set.
-                                    if cr == False :
-                                        for table in self.returnTables :
-                                            self.returnTables[table].records = {}
-                                        return
-                                else: 
-                                    for key in pkList:
-                                        if key in cr[t]:
-                                            continue
-                                        else:
-                                            pkList.remove(key) 
-                            for key in self.returnTables[t].records.keys():
-                                if not key in pkList :
-                                    del self.returnTables[t].records[key]
-                        return
+                if not resultStandard :
+                    self._HandleBoolOnlyResult(logic, compareResult)
+                    return
+                else: 
+                    #check if row also exist in other result.
+                    for t in resultStandard:
+                        pkList = []
+                        for key in resultStandard[t]:
+                            pkList.append(key)
+                        for cr in compareResult:
+                            if type(cr) is bool:
+                                # if "AND" with False, return empty set.
+                                if cr == False :
+                                    for table in self.returnTables :
+                                        self.returnTables[table].records = {}
+                                    return
+                            else: 
+                                for key in pkList:
+                                    if key in cr[t]:
+                                        continue
+                                    else:
+                                        pkList.remove(key) 
+                        for key in self.returnTables[t].records.keys():
+                            if not key in pkList :
+                                del self.returnTables[t].records[key]
+                    return
             elif logic == 'or':
-                pass 
+                if not resultStandard :
+                    self._HandleBoolOnlyResult(logic, compareResult)
+                    return
+                else:
+                    for t in resultStandard: 
+                        pkList = []
+                        for cr in compareResult:
+                            #store all primary key.
+                            if type(cr) is bool:
+                                # It is no matter if "OR" with any operation.
+                                continue
+                            else:
+                                for key in cr[t]:
+                                    if not key in pkList :
+                                        pkList.append(key)
+                        for key in self.returnTables[t].records.keys():
+                            if not key in pkList :
+                                del self.returnTables[t].records[key]
+                    return
+         
             else :
-                raise RuntimeError ('Unknown logic')  
+                raise RuntimeError ('Unknown logic')
+    '''
+    when all of the results are bool,
+    we only need to determine whether is true or false
+    that is, return all set or none set.
+    ''' 
+    def _HandleBoolOnlyResult(self,logic,compareResult):  
+        if logic == "and":
+            BOOLFLAG = True
+            for r in compareResult:
+                BOOLFLAG = BOOLFLAG and r
+            if BOOLFLAG :
+                return
+            else :
+                for table in self.returnTables:
+                    self.returnTables[table].records = {}
+                return
+        elif logic == "or":
+            BOOLFLAG = None
+            for r in compareResult:
+                if BOOLFLAG == None:
+                    BOOLFLAG = r
+                BOOLFLAG = BOOLFLAG or r
+            if BOOLFLAG :
+                return
+            else :
+                for table in self.returnTables:
+                    self.returnTables[table].records = {}
+                return
+        else:
+            raise RuntimeError ("Unknown logic " + logic)  
     '''
     Return a filtered dict
     '''
