@@ -50,12 +50,12 @@ class HandleSelect:
         condition = []
         condition.append(queryWhere['term1'])  
         condition.append(queryWhere['term2'])
-       
+        compareResult = [] 
         for c in condition:  
             if c :
-                exp1 = self.determineExpression(condition['exp1'])
-                exp2 = self.determineExpression(condition['exp2'])
-                op = condition['operator']
+                exp1 = self.determineExpression(c['exp1'])
+                exp2 = self.determineExpression(c['exp2'])
+                op = c['operator']
                 
                 # Always make exp1 as dict
                 # Case 1, exp1 : int exp2 : dict swap(exp1,exp2)
@@ -68,11 +68,72 @@ class HandleSelect:
                 # Due to previous swap, if exp1 not dict, and both of them is not dict
                 if not type(exp1) is dict:
                     #Directly do logical operation
-                    pass 
+                    if op == "=":
+                        compareResult.append(exp1 == exp2 )
+                    if op == ">":
+                        compareResult.append(exp1 > exp2 )
+                    if op == "<":
+                        compareResult.append(exp1 < exp2 )
                 else:
-                    filterRow(exp1,exp2,op) 
- 
-        return self.returnTables
+                    compareResult.append(self.filterRow(exp1,exp2,op))
+   
+        # Handle logical merge
+        # Only when compareResult have more than one item
+        # need to merge
+        if len(compareResult) > 1 :
+            self.logicalMerge(compareResult,logic)
+        else :
+            self.logicalMerge(compareResult,None)
+        
+        for t in self.returnTables:
+            print self.returnTables[t].records
+    '''
+    Logic : AND OR None
+    compareResult : Dict, bool
+    '''
+    def logicalMerge(self,compareResult,logic):
+        if logic == None:
+            if type(compareResult[0]) is bool:
+                if compareResult[0] == True:
+                    return
+                # if the compare result only has false
+                # it should return nothing.
+                else :
+                    for t in self.returnTables:
+                        self.returnTables[t].records = {}
+                    return
+            # if the compareResult type is dict, 
+            # Update the remain compare result.
+            elif type(compareResult[0]) is dict:
+                for t in compareResult[0]:
+                    self.returnTables[t].records = compareResult[0][t]
+                return
+            else:
+                raise RuntimeError ('Merge with unknow type')
+        else :
+            if logic == 'and':
+                #take one result as standard
+                resultStandard = compareResult[0]
+                #check if row also exist in other result.
+                # use a new dict to store which sholud be reserverd.
+                for t in resultStandard:
+                    pkList = []
+                    for key in resultStandard[t]:
+                        pkList.append(key)
+                    for cr in compareResult:
+                        for key in pkList:
+                            if key in cr[t]:
+                                continue
+                            else:
+                                pkList.remove(key) 
+                    for key in self.returnTables[t].records.keys():
+                        if not key in pkList :
+                            del self.returnTables[t].records[key]
+                return 
+            elif logic == 'or':
+                pass 
+            else :
+                raise RuntimeError ('Unknown logic')  
     '''
     Return a filtered dict
     '''

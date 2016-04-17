@@ -154,9 +154,11 @@ class TestHandleSelect(unittest.TestCase):
                     self.assertIn(key,expected[t])
                     self.assertEqual(table[key],returnDict[t][key])
         
-   
-       
-   
+    def test_CheckWhere(self): 
+        query = {'where': {'term2': {'operator':'>','exp2':900,'exp1':'teachers.id'}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+     
+        self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+        self.hs.checkWhere(query['where']) 
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()
