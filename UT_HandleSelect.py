@@ -154,11 +154,43 @@ class TestHandleSelect(unittest.TestCase):
                     self.assertIn(key,expected[t])
                     self.assertEqual(table[key],returnDict[t][key])
         
-    def test_CheckWhere(self): 
+    def test_CheckWhere_2table(self): 
         query = {'where': {'term2': {'operator':'>','exp2':900,'exp1':'teachers.id'}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
      
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         self.hs.checkWhere(query['where']) 
+     
+    def test_CheckWhere_1table1bool_false(self): 
+            query = {'where': {'term2': {'operator':'>','exp2':900,'exp1':800}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+         
+            self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+            self.hs.checkWhere(query['where']) 
+            for t in self.hs.returnTables:
+                self.assertEqual(self.hs.returnTables[t].records,{})
+    def test_CheckWhere_1table1bool_true(self): 
+                query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+             
+                self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+                self.hs.checkWhere(query['where'])
+                expected = {'students':{3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
+                for t in self.hs.returnTables:
+                    self.assertEqual(self.hs.returnTables[t].records,expected[t])
+    def test_CheckWhere_2bool_TF(self): 
+                    query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 2, 'exp1': 1}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+                 
+                    self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+                    self.hs.checkWhere(query['where'])
+                    for t in self.hs.returnTables:
+                        self.assertEqual(self.hs.returnTables[t].records,{})
+    def test_CheckWhere_2bool_TT(self): 
+                query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 1, 'exp1': 1}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+             
+                self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+                self.hs.checkWhere(query['where'])
+                expected = {'students':{1:{'id':1,'name':'frank','teachername':'Jason Chang'},3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
+                for t in self.hs.returnTables:
+                    self.assertEqual(self.hs.returnTables[t].records,expected[t])
+
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()

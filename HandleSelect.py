@@ -85,8 +85,6 @@ class HandleSelect:
         else :
             self.logicalMerge(compareResult,None)
         
-        for t in self.returnTables:
-            print self.returnTables[t].records
     '''
     Logic : AND OR None
     compareResult : Dict, bool
@@ -112,24 +110,48 @@ class HandleSelect:
                 raise RuntimeError ('Merge with unknow type')
         else :
             if logic == 'and':
-                #take one result as standard
-                resultStandard = compareResult[0]
-                #check if row also exist in other result.
-                # use a new dict to store which sholud be reserverd.
-                for t in resultStandard:
-                    pkList = []
-                    for key in resultStandard[t]:
-                        pkList.append(key)
-                    for cr in compareResult:
-                        for key in pkList:
-                            if key in cr[t]:
-                                continue
-                            else:
-                                pkList.remove(key) 
-                    for key in self.returnTables[t].records.keys():
-                        if not key in pkList :
-                            del self.returnTables[t].records[key]
-                return 
+                    #take one result as standard
+                    for r in compareResult:
+                        if type(r) is dict :
+                            resultStandard = r
+                            break
+                        else:
+                            resultStandard = None
+                    # Fist of all , if resultStandard doesn't assign any list.
+                    # Which means all of the results is bool.
+                    if not resultStandard :
+                        BOOLFLAG = True
+                        for r in compareResult:
+                            BOOLFLAG = BOOLFLAG and r
+                        if BOOLFLAG :
+                            return
+                        else :
+                            for table in self.returnTables:
+                                self.returnTables[table].records = {}
+                            return
+                    else: 
+                        #check if row also exist in other result.
+                        for t in resultStandard:
+                            pkList = []
+                            for key in resultStandard[t]:
+                                pkList.append(key)
+                            for cr in compareResult:
+                                if type(cr) is bool:
+                                    # if "AND" with False, return empty set.
+                                    if cr == False :
+                                        for table in self.returnTables :
+                                            self.returnTables[table].records = {}
+                                        return
+                                else: 
+                                    for key in pkList:
+                                        if key in cr[t]:
+                                            continue
+                                        else:
+                                            pkList.remove(key) 
+                            for key in self.returnTables[t].records.keys():
+                                if not key in pkList :
+                                    del self.returnTables[t].records[key]
+                        return
             elif logic == 'or':
                 pass 
             else :
