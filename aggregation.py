@@ -1,5 +1,4 @@
 import database
-from HandleSelect import *
 
 class Aggregation:
     
@@ -8,48 +7,39 @@ class Aggregation:
     handle COUNT(), SUM()
     '''
 
-    def __init__(self, db):
-        self.db = db
-        self.hs = HandleSelect(self.db)
+    def __init__(self):
         self.counted = 0
 
-    def count(returnTable, column_name):
+    def count(self, returnTable, column_name, match_pair):
         '''
         load table from loadTable with something like this:
-            query = {'from': [{'alias': '', 'tableName': 'teachers'}}
-        the above is:
-            hs.loadTable(query['from']) or
-            hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
-
         then get the table from returnTable
         '''
-        #query = {'from': [{'alias': '', 'tableName': 'teachers'}]}
-        #self.hs.loadTable(query['from'])
-        #returnTable = self.hs.returnTable()
-
         # count number of column_name: COUNT(column_name)
-        self.counted = len(returnTable.keys())
+        self.counted = len(match_pair)
         # handle return table (rename AS blablabla)
         returnCol = 'COUNT('+column_name+')'
         to_return = {self.counted: {returnCol: self.counted}}
         return to_return
 
-    def sum(returnTable, column_name):
+    def sum(self, returnTable, column_name, match_pair, query_from):
         '''
         from returnTable, we need to re-assign returnTable in real practice.
         '''
-        #query = {'from': [{'alias': '', 'tableName': 'teachers'}]}
-        #self.hs.loadTable(query['from'])
-        #returnTable = self.hs.returnTable()
-
         self.to_sum = 0
+        b_f = False
         # sum them up
-        for k in returnTable.keys():
-            try:
-                self.to_sum += returTable[k][column_name]
-            except TypeError:
-                self.to_sum = 0
-                print "Unsupported sum error near SUM()"
+        for k in returnTable[query_from]['records'].keys():
+            for m in match_pair:
+                if k == m[query_from]:
+                    try:
+                        self.to_sum += returnTable[query_from]['records'][k][column_name]
+                    except TypeError:
+                        self.to_sum = 0
+                        b_f = True
+                        print "Unsupported sum error near SUM()"
+                        break
+            if b_f:
                 break
 
         returnCol = 'SUM('+column_name+')'
