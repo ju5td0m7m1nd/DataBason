@@ -80,13 +80,12 @@ class HandleSelect:
         # Only when compareResult have more than one item
         # need to merge
         if len(compareResult) > 1 :
-            self.logicalMerge(compareResult,logic)
+            self.matchPair = self.logicalMerge(compareResult,logic)
         else :
-            self.logicalMerge(compareResult,None)
-
+            self.matchPair = self.logicalMerge(compareResult,None)
     def checkSelect(self,selectQuery): 
         requestList = selectQuery['fieldNames'] 
-        if selectColumnValid(requestList):
+        if self.selectColumnValid(requestList):
             for request in requestList:
                 if '.' in column :
                     tableName = column.split('.')[0] 
@@ -109,7 +108,7 @@ class HandleSelect:
                     if columnName in self.returnTables[tableName].attributeList:
                         return True
                     else :
-                        raise RuntimeError ("Unknown column name: "+columnName+ " in table: "+tableName  
+                        raise RuntimeError ("Unknown column name: "+columnName+ " in table: "+tableName)  
                 else :
                     raise RuntimeError("Unknown table name "+tableName )
             else :
@@ -131,25 +130,21 @@ class HandleSelect:
         if logic == None:
             if type(compareResult[0]) is bool:
                 if compareResult[0] == True:
-                    return
+                    return compareResult[0]
                 # if the compare result only has false
                 # it should return nothing.
                 else :
-                    for t in self.returnTables:
-                        self.returnTables[t].records = {}
-                    return
+                    return []
             # if the compareResult type is dict, 
             # Update the remain compare result.
-            elif type(compareResult[0]) is dict:
-                for t in compareResult[0]:
-                    self.returnTables[t].records = compareResult[0][t]
-                return
+            elif type(compareResult[0]) is list:
+                return compareResult[0]
             else:
                 raise RuntimeError ('Merge with unknow type')
         else :
             #take one result as standard
             for r in compareResult:
-                if type(r) is dict :
+                if type(r) is list:
                     resultStandard = r
                     break
                 else:
@@ -159,52 +154,28 @@ class HandleSelect:
 
             if logic == 'and':
                 if not resultStandard :
-                    self._HandleBoolOnlyResult(logic, compareResult)
-                    return
+                    return self._HandleBoolOnlyResult(logic, compareResult)
                 else: 
-                    #check if row also exist in other result.
-                    for t in resultStandard:
-                        pkList = []
-                        for key in resultStandard[t]:
-                            pkList.append(key)
+                    for r in resultStandard:
                         for cr in compareResult:
                             if type(cr) is bool:
-                                # if "AND" with False, return empty set.
-                                if cr == False :
-                                    for table in self.returnTables :
-                                        self.returnTables[table].records = {}
-                                    return
-                            else: 
-                                for key in pkList:
-                                    if key in cr[t]:
-                                        continue
-                                    else:
-                                        pkList.remove(key) 
-                        for key in self.returnTables[t].records.keys():
-                            if not key in pkList :
-                                del self.returnTables[t].records[key]
-                    return
+                                if cr == False:
+                                    return [] 
+                            elif not r in cr:
+                                resultStandard.remove(r)                   
+                    return resultStandard
             elif logic == 'or':
                 if not resultStandard :
-                    self._HandleBoolOnlyResult(logic, compareResult)
-                    return
-                else:
-                    for t in resultStandard: 
-                        pkList = []
-                        for cr in compareResult:
-                            #store all primary key.
-                            if type(cr) is bool:
-                                # It is no matter if "OR" with any operation.
-                                continue
-                            else:
-                                for key in cr[t]:
-                                    if not key in pkList :
-                                        pkList.append(key)
-                        for key in self.returnTables[t].records.keys():
-                            if not key in pkList :
-                                del self.returnTables[t].records[key]
-                    return
-         
+                    return self._HandleBoolOnlyResult(logic, compareResult)
+                else: 
+                    for cr in compareResult:
+                        if type(cr) is bool:
+                            continue 
+                        else:
+                            for pair in cr:
+                                if not pair in resultStandard:
+                                    resultStandard.append(pair)                   
+                    return resultStandard
             else :
                 raise RuntimeError ('Unknown logic')
     '''
@@ -218,11 +189,9 @@ class HandleSelect:
             for r in compareResult:
                 BOOLFLAG = BOOLFLAG and r
             if BOOLFLAG :
-                return
+                return True
             else :
-                for table in self.returnTables:
-                    self.returnTables[table].records = {}
-                return
+                return []
         elif logic == "or":
             BOOLFLAG = None
             for r in compareResult:
@@ -230,11 +199,9 @@ class HandleSelect:
                     BOOLFLAG = r
                 BOOLFLAG = BOOLFLAG or r
             if BOOLFLAG :
-                return
+                return True
             else :
-                for table in self.returnTables:
-                    self.returnTables[table].records = {}
-                return
+                return []
         else:
             raise RuntimeError ("Unknown logic " + logic)  
     '''
@@ -244,9 +211,7 @@ class HandleSelect:
     def filterRow(self, exp1,exp2,op):
             #Create a new dict to store compare results.
             #Init
-            newTable = {}
-            for table in self.returnTables:
-                newTable[table] = {}
+            pairList = [] 
             if type(exp2) is dict:
                 #Iterate dict to compare.
                 for key1 in exp1 :
@@ -264,14 +229,15 @@ class HandleSelect:
                         elif op == "<":
                             if value1['value'] < value2['value']:
                                 flag = True 
+                        elif op == "<>" :
+                            if value1['value'] != value2['value']:
+                                flag = True
                         else :
                             raise RuntimeError("Invalid operation " +op+" ")
                         if flag :
                             tableName_exp1 = value1['tableName']
                             tableName_exp2 = value2['tableName']
-                            newTable[tableName_exp1][key1] = self.returnTables[tableName_exp1].records[key1]
-                            newTable[tableName_exp2][key2] = self.returnTables[tableName_exp2].records[key2]
-
+                            pairList.append({tableName_exp1:key1,tableName_exp2:key2})
             else:
                 for key in exp1 :
                     value = exp1[key]
@@ -289,9 +255,11 @@ class HandleSelect:
                         raise RuntimeError("Invalid operation "+op+" ")
                     if flag:
                         tableName = exp1[key]['tableName']
-                        newTable[tableName][key] = self.returnTables[tableName].records[key]
-            return newTable
-
+                        for t in self.returnTables:
+                            if not t == tableName:
+                                for recordsKey in self.returnTables[t].records:   
+                                    pairList.append({tableName:key,t:recordsKey})
+            return pairList 
 
     '''
     Exp may has these type :

@@ -100,59 +100,24 @@ class TestHandleSelect(unittest.TestCase):
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         exp1 = self.hs.determineExpression('teachers.name')
         exp2 = self.hs.determineExpression('teachername')
-        returnDict = self.hs.filterRow(exp1,exp2,"=") 
-        expected = {'students': 
-                        {   
-                            3 : {'id':3,'name':'Su4', 'teachername':'Sun Hong Lai'},
-                            4 : {'id':4,'name':'Douglas', 'teachername':'Sun Hong Wu'},
-                        },
-                    'teachers':
-                        {   999 : {'id':999,'name':'Sun Hong Wu'},
-                            888 : {'id':888,'name':'Sun Hong Lai'},
-                        }
-                   }
-        for t in expected:
-            self.assertIn(t,returnDict)
-            table = expected[t]
-            for key in table :
-                self.assertIn(key,expected[t])
-                self.assertEqual(table[key],returnDict[t][key])
+        returnList = self.hs.filterRow(exp1,exp2,"=") 
+        expected = [{'students':3,'teachers':888},{'students':4,'teachers':999}] 
+        self.assertEqual(returnList,expected) 
     def test_FilterRow_String(self):
 
             self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
             exp1 = self.hs.determineExpression('teachers.name')
             exp2 = self.hs.determineExpression('"Sun Hong Lai"')
-            returnDict = self.hs.filterRow(exp1,exp2,"=") 
-            expected = {'teachers':
-                            {
-                                888 : {'id':888,'name':'Sun Hong Lai'},
-                            }
-                       }
-            for t in expected:
-                self.assertIn(t,returnDict)
-                table = expected[t]
-                for key in table :
-                    self.assertIn(key,expected[t])
-                    self.assertEqual(table[key],returnDict[t][key])
+            returnList = self.hs.filterRow(exp1,exp2,"=") 
+            expected = [{'students':1,'teachers':888},{'students':3,'teachers':888},{'students':4,'teachers':888}]
+            self.assertEqual(expected,returnList) 
     def test_FilterRow_Int(self):
-
             self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
             exp1 = self.hs.determineExpression('teachers.id')
-            exp2 = self.hs.determineExpression(100)
-            returnDict = self.hs.filterRow(exp1,exp2,">") 
-            expected = {'teachers':
-                            {
-                                888 : {'id':888,'name':'Sun Hong Lai'},
-                                999 : {'id':999,'name':'Sun Hong Wu'},
-                            }
-                       }
-            for t in expected:
-                self.assertIn(t,returnDict)
-                table = expected[t]
-                self.assertEqual(len(table),len(returnDict[t]))
-                for key in table :
-                    self.assertIn(key,expected[t])
-                    self.assertEqual(table[key],returnDict[t][key])
+            exp2 = self.hs.determineExpression(900)
+            returnList = self.hs.filterRow(exp1,exp2,">") 
+            expected = [{'students':1,'teachers':999},{'students':3,'teachers':999},{'students':4,'teachers':999}]
+            self.assertEqual(expected,returnList) 
     '''    
     From now on is 2 condition test
     '''
@@ -161,9 +126,8 @@ class TestHandleSelect(unittest.TestCase):
      
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         self.hs.checkWhere(query['where']) 
-        expected = {'students':{4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{999:{'id':999,'name':'Sun Hong Wu'}}} 
-        for t in self.hs.returnTables:
-            self.assertEqual(self.hs.returnTables[t].records,expected[t])  
+        expected = [{'students':4,'teachers':999}]
+        self.assertEqual(self.hs.matchPair,expected)  
 
     def test_CheckWhere_1table1bool_false(self): 
             query = {'where': {'term2': {'operator':'>','exp2':900,'exp1':800}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
@@ -171,22 +135,20 @@ class TestHandleSelect(unittest.TestCase):
             self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
             self.hs.checkWhere(query['where']) 
             for t in self.hs.returnTables:
-                self.assertEqual(self.hs.returnTables[t].records,{})
+                self.assertEqual(self.hs.matchPair,[])
     def test_CheckWhere_1table1bool_true(self): 
                 query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
              
                 self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
                 self.hs.checkWhere(query['where'])
-                expected = {'students':{3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
-                for t in self.hs.returnTables:
-                    self.assertEqual(self.hs.returnTables[t].records,expected[t])
+                expected = [{'students':3,'teachers':888},{'students':4,'teachers':999}] 
+                self.assertEqual(self.hs.matchPair,expected)
     def test_CheckWhere_2bool_TF(self): 
                     query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 2, 'exp1': 1}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
                  
                     self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
                     self.hs.checkWhere(query['where'])
-                    for t in self.hs.returnTables:
-                        self.assertEqual(self.hs.returnTables[t].records,{})
+                    self.assertEqual(self.hs.matchPair,[])
     def test_CheckWhere_2bool_TT(self): 
                 query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 1, 'exp1': 1}, 'logic': 'and'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
              
@@ -200,9 +162,8 @@ class TestHandleSelect(unittest.TestCase):
              
                 self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
                 self.hs.checkWhere(query['where'])
-                expected = {'students':{4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'}}} 
-                for t in self.hs.returnTables:
-                    self.assertEqual(self.hs.returnTables[t].records,expected[t])
+                expected = [{'students': 4, 'teachers': 888}, {'students': 4, 'teachers': 999}, {'students': 1, 'teachers': 888}, {'students': 3, 'teachers': 888}] 
+                self.assertEqual(self.hs.matchPair,expected)
     def test_CheckWhere_2bool_TF_OR(self): 
                 query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {'operator': '=', 'exp2': 2, 'exp1': 1}, 'logic': 'or'}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
              
@@ -219,17 +180,16 @@ class TestHandleSelect(unittest.TestCase):
      
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         self.hs.checkWhere(query['where']) 
-        expected = {'students':{3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
-        for t in self.hs.returnTables:
-            self.assertEqual(self.hs.returnTables[t].records,expected[t])  
+        expected = [{'students':3,'teachers':888},
+                    {'students':4,'teachers':999}] 
+        self.assertEqual(self.hs.matchPair,expected)  
 
     def test_CheckWhere_1bool_F(self): 
             query = {'where': {'term2': {'operator':'>','exp2':900,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
          
             self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
             self.hs.checkWhere(query['where']) 
-            for t in self.hs.returnTables:
-                self.assertEqual(self.hs.returnTables[t].records,{})
+            self.assertEqual(self.hs.matchPair,[])
     def test_CheckWhere_1bool_true(self): 
             query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
          
