@@ -83,7 +83,46 @@ class HandleSelect:
             self.logicalMerge(compareResult,logic)
         else :
             self.logicalMerge(compareResult,None)
-        
+
+    def checkSelect(self,selectQuery): 
+        requestList = selectQuery['fieldNames'] 
+        if selectColumnValid(requestList):
+            for request in requestList:
+                if '.' in column :
+                    tableName = column.split('.')[0] 
+                    columnName = column.split('.')[1]
+                else :
+                    for t in self.returnTables:
+                        if column in self.returnTables[t].attributeList:
+                            tableName = t
+                            columnName = column          
+                            break
+                  
+        return
+    
+    def selectColumnValid(requestList):
+        for column in requestList:
+            if '.' in column : 
+                tableName = column.split('.')[0] 
+                columnName = column.split('.')[1] 
+                if tableName in self.returnTables :
+                    if columnName in self.returnTables[tableName].attributeList:
+                        return True
+                    else :
+                        raise RuntimeError ("Unknown column name: "+columnName+ " in table: "+tableName  
+                else :
+                    raise RuntimeError("Unknown table name "+tableName )
+            else :
+                tableCount = 0
+                for table in self.returnTables :
+                    if  column in table.attributeList: 
+                        tableCount = tableCount + 1 
+                if tableCount == 0 :
+                    raise RuntimeError ("Unknown column name.")
+                elif tableCount > 1 :
+                    raise RuntimeError ("Column name not distict.")
+                else:
+                    return True   
     '''
     Logic : AND OR None
     compareResult : Dict, bool

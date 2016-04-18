@@ -231,13 +231,15 @@ class TestHandleSelect(unittest.TestCase):
             for t in self.hs.returnTables:
                 self.assertEqual(self.hs.returnTables[t].records,{})
     def test_CheckWhere_1bool_true(self): 
-                query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
-             
-                self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
-                self.hs.checkWhere(query['where'])
-                expected = {'students':{1:{'id':1,'name':'frank','teachername':'Jason Chang'},3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
-                for t in self.hs.returnTables:
-                    self.assertEqual(self.hs.returnTables[t].records,expected[t])
-  
+            query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+         
+            self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
+            self.hs.checkWhere(query['where'])
+            expected = {'students':{1:{'id':1,'name':'frank','teachername':'Jason Chang'},3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
+            for t in self.hs.returnTables:
+                self.assertEqual(self.hs.returnTables[t].records,expected[t])
+    def test_RequestList(self):
+            query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
+            self.hs.checkSelect(query['select'])           
 if __name__ == '__main__' and __package__ is None:
     unittest.main()
