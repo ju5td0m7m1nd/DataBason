@@ -18,21 +18,22 @@
             text: "send!"
             size_hint: 0.2, 0.2
             pos: root.x + query_text_input.width, root.top - self.height
-            on_press: root.update()
+            on_release: root.update()
 
         Button:
             id: load_sql
             text: "load sql"
             size_hint: 0.2, 0.1
             pos: root.x + query_text_input.width, root.top - self.height - send_button.height
-            on_press: root.show_load()
+            on_release: root.show_load()
 
+        
         Button:
             id: mute_button
             text: "mute/unmute"
             size_hint: 0.2, 0.1
             pos: root.x + query_text_input.width, root.top - self.height - send_button.height - load_sql.height
-            on_press: root.mute()
+            on_release: root.mute()
 
         BoxLayout:
             orientation: "vertical"
@@ -51,7 +52,7 @@
         size: root.size
         pos: root.pos
         orientation: "vertical"
-        FileChooserListView:
+        FileChooserIconView:
             id: filechooser
         
         BoxLayout:

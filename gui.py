@@ -41,21 +41,34 @@ class Display(FloatLayout):
         with open(os.path.join(path, filename[0])) as stream:
             self.query_in.text = stream.read()
 
-        print "done"
         self.dismiss_popup()
-
-
+    
+    
     def mute(self):
         if self.sound.volume == 1:
             self.sound.volume = 0
         elif self.sound.volume == 0:
             self.sound.volume = 1
+    
 
-    def update(self):
-        if self.sound is None:
-            self.sound = SoundLoader.load("21CenturyFox.mp3")
+    def release_sound(self):
+        if self.sound:
+            self.sound.stop()
+            self.sound.unload()
+            self.sound = None
+
+    def sound_control(self, sound_file):
+        if self.sound:
+            self.release_sound()
+        
+        self.sound = SoundLoader.load(sound_file)
         if self.sound.status != 'stop':
             self.sound.stop()
+
+        self.sound.play()
+
+    def update(self):
+        self.release_sound()
 
         # clear content avoid multiple listview.
         self.data_box.clear_widgets()
@@ -71,13 +84,15 @@ class Display(FloatLayout):
             try:
                 self.table = db.processQuery(query)
                 if db.command == 'create':
-                    self.sound.play()
+                    self.sound_control("table_created.mp3")
                 #if db.command == 'insert':
                 table_title.text = self.table.tableName
                 self.error = False
             except RuntimeError as e:
                 self.error = True
                 table_title.text = str(e)
+                self.release_sound()
+                self.sound_control("runtimeerror.mp3")
 
         self.data_box.add_widget(table_title)
         if not self.error:
