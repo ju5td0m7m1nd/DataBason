@@ -4,7 +4,7 @@ import HandleSelect
 class TestHandleSelect(unittest.TestCase):
     def setUp(self):
         self.db = database.Database()
-        self.hs = HandleSelect.HandleSelect(self.db)    
+        self.hs = HandleSelect.HandleSelect(self.db,"Q")    
         if not len(self.db.tables) > 0:
             self.db.processQuery('CREATE TABLE students (id int primary key, name varchar(20), teachername varchar(20))') 
             self.db.processQuery('CREATE TABLE teachers (id int primary key, name varchar(20))')    
@@ -198,8 +198,16 @@ class TestHandleSelect(unittest.TestCase):
             expected = {'students':{1:{'id':1,'name':'frank','teachername':'Jason Chang'},3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
             for t in self.hs.returnTables:
                 self.assertEqual(self.hs.returnTables[t].records,expected[t])
-    def test_RequestList(self):
-            query = {'where': {'term2': {'operator':'>','exp2':700,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
-            self.hs.checkSelect(query['select'])           
+              
+    def test_ExecuteQuery(self):
+        query = {'where': {'term2': {'operator':'=','exp2':'teacherName','exp1':'teachers.name'}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['students.name', 'teachers.name']}}
+        hs = HandleSelect.HandleSelect(self.db,query)
+        hs.executeQuery() 
+    def test_ExecuteQuery(self):
+        query = {'where': {'term2': {'operator':'>','exp2':'students.id','exp1':1}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['students.name', 'teachers.name']}}
+        hs = HandleSelect.HandleSelect(self.db,query)
+        hs.executeQuery() 
+
+
 if __name__ == '__main__' and __package__ is None:
     unittest.main()

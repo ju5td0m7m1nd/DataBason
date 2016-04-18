@@ -22,9 +22,15 @@ class HandleSelect:
             in order to make share it located in same place
     '''
     returnTables = {} 
-    def __init__(self,db):
-        self.db = db   
+    def __init__(self,db,query):
+        self.db = db  
+        self.query = query 
 
+    def executeQuery(self):
+        self.loadTable(self.query['from'])
+        self.checkWhere(self.query['where'])
+        self.checkSelect(self.query['select'])  
+        print self.selectResult
     def loadTable(self,queryFrom):
         returnTables = {}
         db = self.db
@@ -68,12 +74,15 @@ class HandleSelect:
                 # Due to previous swap, if exp1 not dict, and both of them is not dict
                 if not type(exp1) is dict:
                     #Directly do logical operation
+                    RESULT = False
                     if op == "=":
                         compareResult.append(exp1 == exp2 )
-                    if op == ">":
+                    elif op == ">":
                         compareResult.append(exp1 > exp2 )
-                    if op == "<":
+                    elif op == "<":
                         compareResult.append(exp1 < exp2 )
+                    elif op == "<>":
+                        compareResult.append 
                 else:
                     compareResult.append(self.filterRow(exp1,exp2,op))
         # Handle logical merge
@@ -84,22 +93,27 @@ class HandleSelect:
         else :
             self.matchPair = self.logicalMerge(compareResult,None)
     def checkSelect(self,selectQuery): 
-        requestList = selectQuery['fieldNames'] 
+        requestList = selectQuery['fieldNames']
+        selectResult = {} 
         if self.selectColumnValid(requestList):
             for request in requestList:
-                if '.' in column :
-                    tableName = column.split('.')[0] 
-                    columnName = column.split('.')[1]
+                result = []
+                if '.' in request :
+                    tableName = request.split('.')[0] 
+                    columnName = request.split('.')[1]
                 else :
                     for t in self.returnTables:
                         if column in self.returnTables[t].attributeList:
                             tableName = t
-                            columnName = column          
-                            break
+                            columnName = request          
+                for p in self.matchPair:
+                    pk = p[tableName] 
+                    result.append(self.returnTables[tableName].records[pk][columnName])
+                selectResult[request] = result     
                   
-        return
+        self.selectResult = selectResult
     
-    def selectColumnValid(requestList):
+    def selectColumnValid(self,requestList):
         for column in requestList:
             if '.' in column : 
                 tableName = column.split('.')[0] 
@@ -114,7 +128,7 @@ class HandleSelect:
             else :
                 tableCount = 0
                 for table in self.returnTables :
-                    if  column in table.attributeList: 
+                    if  column in self.returnTables[table].attributeList: 
                         tableCount = tableCount + 1 
                 if tableCount == 0 :
                     raise RuntimeError ("Unknown column name.")
