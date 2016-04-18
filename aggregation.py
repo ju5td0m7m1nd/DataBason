@@ -13,7 +13,7 @@ class Aggregation:
         self.hs = HandleSelect(self.db)
         self.counted = 0
 
-    def count(column_name):
+    def count(returnTable, column_name):
         '''
         load table from loadTable with something like this:
             query = {'from': [{'alias': '', 'tableName': 'teachers'}}
@@ -23,9 +23,9 @@ class Aggregation:
 
         then get the table from returnTable
         '''
-        query = {'from': [{'alias': '', 'tableName': 'teachers'}]}
-        self.hs.loadTable(query['from'])
-        returnTable = self.hs.returnTable()
+        #query = {'from': [{'alias': '', 'tableName': 'teachers'}]}
+        #self.hs.loadTable(query['from'])
+        #returnTable = self.hs.returnTable()
 
         # count number of column_name: COUNT(column_name)
         self.counted = len(returnTable.keys())
@@ -34,13 +34,13 @@ class Aggregation:
         to_return = {self.counted: {returnCol: self.counted}}
         return to_return
 
-    def sum(column_name):
+    def sum(returnTable, column_name):
         '''
         from returnTable, we need to re-assign returnTable in real practice.
         '''
-        query = {'from': [{'alias': '', 'tableName': 'teachers'}]}
-        self.hs.loadTable(query['from'])
-        returnTable = self.hs.returnTable()
+        #query = {'from': [{'alias': '', 'tableName': 'teachers'}]}
+        #self.hs.loadTable(query['from'])
+        #returnTable = self.hs.returnTable()
 
         self.to_sum = 0
         # sum them up
