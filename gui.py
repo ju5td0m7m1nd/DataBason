@@ -1,9 +1,11 @@
+import os
 import re
 import kivy
 kivy.require('1.9.1')
 from database import Database
 from table_schema import Table
 from kivy.app import App
+from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.core.audio import SoundLoader
 from kivy.properties import ObjectProperty
@@ -12,11 +14,36 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.adapters.dictadapter import DictAdapter
 from kivy.uix.listview import ListView, ListItemLabel, CompositeListItem
 
+class LoadDialog(FloatLayout):
+    load = ObjectProperty(None)
+    cancel = ObjectProperty(None)
+
 class Display(FloatLayout):
+    
+    loadfile = ObjectProperty()
     
     query_in = ObjectProperty()
     data_box = ObjectProperty()
     sound = ObjectProperty(None, allownone=True)
+    
+    # dismiss pop up of the load file area
+    def dismiss_popup(self):
+        self._popup.dismiss()
+
+    # pop up the load file area
+    def show_load(self):
+        content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+        self._popup = Popup(title="Load file", content=content, size_hint=(0.9, 0.9))
+        self._popup.open()
+    
+    # pop up load file
+    def load(self, path, filename):
+        with open(os.path.join(path, filename[0])) as stream:
+            self.query_in.text = stream.read()
+
+        print "done"
+        self.dismiss_popup()
+
 
     def mute(self):
         if self.sound.volume == 1:
@@ -56,22 +83,22 @@ class Display(FloatLayout):
         if not self.error:
             # set up colume name bar with grid layout
             gridCol_Names = GridLayout(cols=5, size_hint=(1, 0.2))
-            self.title_adapter(gridCol_Names)
-            self.data_box.add_widget(gridCol_Names)    
+            self.title_adapter(gridCol_Names, db.command)
+            self.data_box.add_widget(gridCol_Names)
             # set up datas
             listviewadapter = self.table_adapter()
             # Use the adapter in our ListView:
             list_view = ListView(adapter=listviewadapter)
             self.data_box.add_widget(list_view)
 
-    def title_adapter(self, grid_layout):
+    def title_adapter(self, grid_layout, dbCommand):
 
         table = self.table
         self.titles = []
         
         for attr in sorted(table.attributeList):
             self.titles.append(attr)
-            if attr == table.primaryKey:
+            if attr == table.primaryKey and dbCommand != 'select':
                 grid_layout.add_widget(Label(font_size=25, color=[1, 0, 0, 1], text=attr))
             else:
                 grid_layout.add_widget(Label(font_size=25, color=[0, 1, 0, 1], text=attr))

@@ -16,15 +16,22 @@
         Button:
             id: send_button
             text: "send!"
-            size_hint: 0.2, 0.3
+            size_hint: 0.2, 0.2
             pos: root.x + query_text_input.width, root.top - self.height
             on_press: root.update()
+
+        Button:
+            id: load_sql
+            text: "load sql"
+            size_hint: 0.2, 0.1
+            pos: root.x + query_text_input.width, root.top - self.height - send_button.height
+            on_press: root.show_load()
 
         Button:
             id: mute_button
             text: "mute/unmute"
             size_hint: 0.2, 0.1
-            pos: root.x + query_text_input.width, root.top - self.height - send_button.height
+            pos: root.x + query_text_input.width, root.top - self.height - send_button.height - load_sql.height
             on_press: root.mute()
 
         BoxLayout:
@@ -38,3 +45,22 @@
                 #size_hint: 1, 0.o1
                 color: 0, 1, 0, 1
                 text: "DATABASON"
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+        
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+                
+            Button:
+                text: "Load File"
+                on_release: root.load(filechooser.path, filechooser.selection)
