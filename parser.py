@@ -29,7 +29,7 @@ class Parser :
         if self.lex.matchKeyword('where'):
             self.lex.eatKeyword('where')
             pred = self.predicate()
-        #print {'select':projs, 'from':tables, 'where':pred}
+        print {'select':projs, 'from':tables, 'where':pred}
         return {'select':projs, 'from':tables, 'where':pred}
 
     def projectList(self):
@@ -48,10 +48,17 @@ class Parser :
         return {'fieldNames':fieldNames, 'aggFn':aggFn}
 
     def projectField(self):
-        name = self.lex.eatId()
-        if self.lex.matchDelim('.'):
-            name += self.lex.eatDelim('.')
-            name += self.lex.eatId()
+        name = ''
+        if self.lex.matchDelim('*'):
+            name = self.lex.eatDelim('*')
+        else:
+            name = self.lex.eatId()
+            if self.lex.matchDelim('.'):
+                name += self.lex.eatDelim('.')
+                if self.lex.matchDelim('*'):
+                    name += self.lex.eatDelim('*')
+                else:
+                    name += self.lex.eatId()
         return name
 
     def aggregationFn(self):
@@ -212,7 +219,7 @@ class Parser :
 #l = Parser('CREATE TABLE Student (Id INT primary key, Name VARCHAR(-10))')
 #l = Parser("insert into student (id, name) values (-2147483648, 'Mike Portnoy 123')")
 #d = {}
-#l = Parser("select count(name) from author where nationality = 'Taiwan'")
+#l = Parser("select count(NAME) from AUTHOR where NATIONALITY = 'Taiwan'")
 #l.parse()
 #print l.lex.tokens
 '''try:
