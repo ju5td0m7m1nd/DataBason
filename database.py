@@ -27,7 +27,7 @@ class Database:
             data = parser.parse()
             table = Table(data['tableName'], data['primaryKey'], data['fields'])
             self.addTable(table)
-            print 'created table: ', data
+            #print 'created table: ', data
             return table
         elif cmd=='insert':
             self.command = 'insert'
@@ -37,7 +37,7 @@ class Database:
             table = self.tables[data['tableName']]
             table.Insert(data['fields'], data['values'])
             self.saveTable(table, table.tableName)
-            print 'cur table: ', table.records
+            #print 'cur table: ', table.records
             return table
         elif cmd=='select':
             self.command = 'select'
