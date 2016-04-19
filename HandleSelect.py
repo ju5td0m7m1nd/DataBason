@@ -49,61 +49,61 @@ class HandleSelect:
                 else:
                     returnTables[tableName] = db.tables[tableName]
             else:
-                raise RuntimeError ("Select from table which doesn't exist") 
+                raise RuntimeError ("LoadTable : Select from table which doesn't exist") 
         self.returnTables = returnTables 
     
     def checkWhere(self,queryWhere):
-          
-        logic = queryWhere['logic']
-        condition.append(queryWhere['term1'])  
-        condition.append(queryWhere['term2'])
-        condition = []
         compareResult = [] 
-        for c in condition:  
-            if c :
-                exp1 = self.determineExpression(c['exp1'])
-                exp2 = self.determineExpression(c['exp2'])
-                op = c['operator']
-                
-                # Always make exp1 as dict
-                # Case 1, exp1 : int exp2 : dict swap(exp1,exp2)
-                # Case 2, exp1 : str exp2 : dict swap(exp1,exp2)    
-                if type(exp2) is dict :                 
-                    temp = exp2
-                    exp2 = exp1
-                    exp1 = temp                    
-                
-                # Due to previous swap, if exp1 not dict, and both of them is not dict
-                if not type(exp1) is dict:
-                    #Directly do logical operation
-                    RESULT = False
-                    if op == "=":
-                        RESULT = (exp1 == exp2 )
-                    elif op == ">":
-                        RESULT = (exp1 > exp2 )
-                    elif op == "<":
-                        RESULT = (exp1 < exp2 )
-                    elif op == "<>":
-                        RESULT = (exp1 != exp2 )
-                    pairList = []
-                    if RESULT :
-                        # Need an efficient way to join 2 table.
-                        for t in self.returnTables:
-                            # If pair list is not init.
-                            if not len(pairList):
-                                for key in self.returnTables[t].records:
-                                    pairList.append({t:key})
-                            else :
-                                tempList = []  
-                                for key in self.returnTables[t].records:
-                                    for l in pairList:
-                                        for pairKey in l:
-                                            tempList.append({pairKey:l[pairKey],t:key})
-                                pairList = tempList     
-                    compareResult.append(pairList) 
-                else:
-                    compareResult.append(self.filterRow(exp1,exp2,op))
-                self.compareResult = compareResult
+        if len(queryWhere):  
+            condition = []
+            logic = queryWhere['logic']
+            condition.append(queryWhere['term1'])  
+            condition.append(queryWhere['term2'])
+            for c in condition:  
+                if c :
+                    exp1 = self.determineExpression(c['exp1'])
+                    exp2 = self.determineExpression(c['exp2'])
+                    op = c['operator']
+                    
+                    # Always make exp1 as dict
+                    # Case 1, exp1 : int exp2 : dict swap(exp1,exp2)
+                    # Case 2, exp1 : str exp2 : dict swap(exp1,exp2)    
+                    if type(exp2) is dict :                 
+                        temp = exp2
+                        exp2 = exp1
+                        exp1 = temp                    
+                    
+                    # Due to previous swap, if exp1 not dict, and both of them is not dict
+                    if not type(exp1) is dict:
+                        #Directly do logical operation
+                        RESULT = False
+                        if op == "=":
+                            RESULT = (exp1 == exp2 )
+                        elif op == ">":
+                            RESULT = (exp1 > exp2 )
+                        elif op == "<":
+                            RESULT = (exp1 < exp2 )
+                        elif op == "<>":
+                            RESULT = (exp1 != exp2 )
+                        pairList = []
+                        if RESULT :
+                            # Need an efficient way to join 2 table.
+                            for t in self.returnTables:
+                                # If pair list is not init.
+                                if not len(pairList):
+                                    for key in self.returnTables[t].records:
+                                        pairList.append({t:key})
+                                else :
+                                    tempList = []  
+                                    for key in self.returnTables[t].records:
+                                        for l in pairList:
+                                            for pairKey in l:
+                                                tempList.append({pairKey:l[pairKey],t:key})
+                                    pairList = tempList     
+                        compareResult.append(pairList) 
+                    else:
+                        compareResult.append(self.filterRow(exp1,exp2,op))
+                    self.compareResult = compareResult
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
@@ -153,7 +153,7 @@ class HandleSelect:
                     elif aggType == 'sum':
                         selectResult[aggField] = aggInstance.sum(self.returnTables,columnName,self.matchPair,tableName) 
                     else :
-                        raise RuntimeError ("Unknown aggregation type.")             
+                        raise RuntimeError ("CheckSelect : Unknown aggregation type.")             
         else:
             if self.selectColumnValid(requestList):
                 for request in requestList:
@@ -219,9 +219,9 @@ class HandleSelect:
                     elif columnName in self.returnTables[tableName].attributeList:
                         continue 
                     else :
-                        raise RuntimeError ("Unknown column name: "+columnName+ " in table: "+tableName)  
+                        raise RuntimeError ("SelectColumnValid : Unknown column name: "+columnName+ " in table: "+tableName)  
                 else :
-                    raise RuntimeError("Unknown table name "+tableName )
+                    raise RuntimeError("SelectColumnValid : Unknown table name "+tableName )
             else :
                 if column == '*':
                     continue
@@ -231,9 +231,9 @@ class HandleSelect:
                         if  column in self.returnTables[table].attributeList: 
                             tableCount = tableCount + 1 
                     if tableCount == 0 :
-                        raise RuntimeError ("Unknown column name.")
+                        raise RuntimeError ("SelectColumnValid : Unknown column name.")
                     elif tableCount > 1 :
-                        raise RuntimeError ("Column name not distict.")
+                        raise RuntimeError ("SelectColumnValid : Column name not distict.")
                     else:
                         continue
         return True   
@@ -246,7 +246,7 @@ class HandleSelect:
             if type(compareResult[0]) is list:
                 return compareResult[0]
             else:
-                raise RuntimeError ('Merge with unknow type')
+                raise RuntimeError ('logicalMerge : Merge with unknow type')
         else :
             resultStandard = []
             if logic == 'and':
@@ -272,7 +272,7 @@ class HandleSelect:
                                 resultStandard.append(pair)                   
                 return resultStandard
             else :
-                raise RuntimeError ('Unknown logic')
+                raise RuntimeError ('logicalMerge : Unknown logic')
   
     '''
     Return a filtered dict
@@ -303,7 +303,7 @@ class HandleSelect:
                             if value1['value'] != value2['value']:
                                 flag = True
                         else :
-                            raise RuntimeError("Invalid operation " +op+" ")
+                            raise RuntimeError("FilterRow : Invalid operation " +op+" ")
                         if flag :
                             tableName_exp1 = value1['tableName']
                             tableName_exp2 = value2['tableName']
@@ -322,7 +322,7 @@ class HandleSelect:
                         if exp1[key]['value'] < exp2:
                             flag = True
                     else :
-                        raise RuntimeError("Invalid operation "+op+" ")
+                        raise RuntimeError("filterRow : Invalid operation "+op+" ")
                     if flag:
                         tableName = exp1[key]['tableName']
                         #Need to join table.
@@ -370,9 +370,9 @@ class HandleSelect:
                         expDict[row] = {'tableName':prefix,'value':records[row][name]}
                     return expDict
                 else:
-                    raise RuntimeError ("Column %s not in Table %s",name,prefix)
+                    raise RuntimeError ("DetermineExpression : Column %s not in Table %s",name,prefix)
             else :
-                raise RuntimeError ("Table: " + prefix + " doesn't be loaded")
+                raise RuntimeError ("DetermineExpression : Table: " + prefix + " doesn't be loaded")
         else :
             exp = exp.lower()
             # No prefix need to check exist in either table a or b.
@@ -387,9 +387,9 @@ class HandleSelect:
                         tableName = table
                 # if flag more than one, raise error
                 if flag > 1 :
-                    raise RuntimeError ("Column " + exp +" not distinct")
+                    raise RuntimeError ("DetermineExpression : Column " + exp +" not distinct")
                 elif flag == 0 :
-                    raise RuntimeError ("No match column")
+                    raise RuntimeError ("DetermineExpression : No match column")
                 else:
                     expDict = {}
                     records = self.returnTables[tableName].records
@@ -407,4 +407,4 @@ class HandleSelect:
                             expDict[row] = table[exp]
                             return expDict
                     else :
-                        raise RuntimeError ("Column not in table %s", exp)
+                        raise RuntimeError ("DetermineExpression : Column "+exp+ " not in table")
