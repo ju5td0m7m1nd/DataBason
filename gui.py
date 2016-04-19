@@ -90,7 +90,7 @@ class Display(FloatLayout):
                 if db.command == 'insert':
                     table_title.text = self.table.tableName
                 if db.command == 'select':
-                    pass
+                    table_title.text = "SELECT result"
                 self.error = False
             except RuntimeError as e:
                 self.error = True
@@ -103,33 +103,50 @@ class Display(FloatLayout):
             gridCol_Names = GridLayout(cols=5, size_hint=(1, 0.2))
             self.title_adapter(gridCol_Names, db.command)
             self.data_box.add_widget(gridCol_Names)
+
             # set up datas
-            listviewadapter = self.table_adapter()
+            listviewadapter = self.table_adapter(db.command)
             # Use the adapter in our ListView:
             list_view = ListView(adapter=listviewadapter)
             self.data_box.add_widget(list_view)
+            
 
     def title_adapter(self, grid_layout, dbCommand):
 
         table = self.table
         self.titles = []
-        
-        for attr in sorted(table.attributeList):
-            self.titles.append(attr)
-            if attr == table.primaryKey and dbCommand != 'select':
-                grid_layout.add_widget(Label(font_size=25, color=[1, 0, 0, 1], text=attr))
-            else:
-                grid_layout.add_widget(Label(font_size=25, color=[0, 1, 0, 1], text=attr))
 
-    def table_adapter(self):
+        if dbCommand == 'select':
+            for k in table.keys():
+                self.titles.append(k)
+                grid_layout.add_widget(Label(font_size=25, color=[0, 1, 0, 1], text=k))
+        else:
+            for attr in sorted(table.attributeList):
+                self.titles.append(attr)
+                if attr == table.primaryKey and dbCommand != 'select':
+                    grid_layout.add_widget(Label(font_size=25, color=[1, 0, 0, 1], text=attr))
+                else:
+                    grid_layout.add_widget(Label(font_size=25, color=[0, 1, 0, 1], text=attr))
+
+    def table_adapter(self, dbCommand):
 
         table = self.table
         titles = self.titles
 
-        datas_dict = {i: {j:
-                table.records.values()[i][titles[j]]
-                for j in range(len(table.attributeList))}
-            for i in range(len(table.records.keys()))}
+        if dbCommand == 'select':
+            datas_dict = {i: {j:
+                    table[titles[j]][i]
+                    for j in range(len(titles))}
+                for i in range(len(table[titles[0]]))}
+
+            listviewRange = len(titles)
+        else:
+            datas_dict = {i: {j:
+                    table.records.values()[i][titles[j]]
+                    for j in range(len(table.attributeList))}
+                for i in range(len(table.records.keys()))}
+
+            listviewRange = len(table.attributeList)
 
         """
         datas_dict = {i: {j:
@@ -148,7 +165,7 @@ class Display(FloatLayout):
                         'text': "{0}".format(rec[i]),
                         'font_size': 20
                     }
-                } for i in range(len(table.attributeList)) ]
+                } for i in range(listviewRange) ]
         }
        
         dict_adapter = DictAdapter(data=datas_dict,
