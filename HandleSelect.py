@@ -31,6 +31,7 @@ class HandleSelect:
         self.checkWhere(self.query['where'])
         self.checkSelect(self.query['select'])  
         print self.selectResult
+    
     def loadTable(self,queryFrom):
         returnTables = {}
         db = self.db
@@ -268,10 +269,14 @@ class HandleSelect:
                         raise RuntimeError("Invalid operation "+op+" ")
                     if flag:
                         tableName = exp1[key]['tableName']
-                        for t in self.returnTables:
-                            if not t == tableName:
-                                for recordsKey in self.returnTables[t].records:   
-                                    pairList.append({tableName:key,t:recordsKey})
+                        #Need to join table.
+                        if len(self.returnTables) > 1:
+                            for t in self.returnTables:
+                                if not t == tableName:
+                                    for recordsKey in self.returnTables[t].records:   
+                                        pairList.append({tableName:key,t:recordsKey})
+                        else :
+                            pairList.append({tableName:key})         
             return pairList 
 
     '''
