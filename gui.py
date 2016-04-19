@@ -24,7 +24,8 @@ class Display(FloatLayout):
     
     query_in = ObjectProperty()
     data_box = ObjectProperty()
-    sound = ObjectProperty(None, allownone=True)
+    createsound = ObjectProperty(None, allownone=True)
+    errorsound = ObjectProperty(None, allownone=True)
     
     # dismiss pop up of the load file area
     def dismiss_popup(self):
@@ -84,15 +85,12 @@ class Display(FloatLayout):
             try:
                 self.table = db.processQuery(query)
                 if db.command == 'create':
-                    self.sound_control("table_created.mp3")
                 #if db.command == 'insert':
                 table_title.text = self.table.tableName
                 self.error = False
             except RuntimeError as e:
                 self.error = True
                 table_title.text = str(e)
-                self.release_sound()
-                self.sound_control("runtimeerror.mp3")
 
         self.data_box.add_widget(table_title)
         if not self.error:
