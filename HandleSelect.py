@@ -30,7 +30,7 @@ class HandleSelect:
         self.loadTable(self.query['from'])
         self.checkWhere(self.query['where'])
         self.checkSelect(self.query['select'])  
-        print self.selectResult
+        return self.selectResult
     
     def loadTable(self,queryFrom):
         returnTables = {}
@@ -400,7 +400,7 @@ class HandleSelect:
             else :
                 # check column in table
                 for table in self.returnTables :
-                    if exp in table.attributeList :
+                    if exp in self.returnTables[table].attributeList :
                         # a dictionary contain only {row[pk] : row[exp]} .
                         expDict = {}
                         for row in table:

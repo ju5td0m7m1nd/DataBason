@@ -3,6 +3,7 @@ import pickle
 import re
 from sqlparser import Parser
 from table_schema import Table
+from HandleSelect import *
 
 class Database:
     '''
@@ -43,6 +44,11 @@ class Database:
             self.command = 'select'
             data = parser.parse()
             # use HandleSelect class to validate the select data     
+            hs = HandleSelect(self,data)
+            hs.executeQuery()
+            print hs.selectResult
+            print "123123123123"
+            return hs.selectResult
         else:
             raise RuntimeError('Unkown keyword: ' + cmd)
 

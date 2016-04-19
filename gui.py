@@ -85,12 +85,14 @@ class Display(FloatLayout):
             try:
                 self.table = db.processQuery(query)
                 if db.command == 'create':
+                    self.sound_control('create')
                 #if db.command == 'insert':
                 table_title.text = self.table.tableName
                 self.error = False
             except RuntimeError as e:
                 self.error = True
                 table_title.text = str(e)
+                self.sound_control('error')
 
         self.data_box.add_widget(table_title)
         if not self.error:
