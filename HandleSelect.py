@@ -53,10 +53,11 @@ class HandleSelect:
         self.returnTables = returnTables 
     
     def checkWhere(self,queryWhere):
+          
         logic = queryWhere['logic']
-        condition = []
         condition.append(queryWhere['term1'])  
         condition.append(queryWhere['term2'])
+        condition = []
         compareResult = [] 
         for c in condition:  
             if c :
@@ -399,7 +400,7 @@ class HandleSelect:
             else :
                 # check column in table
                 for table in self.returnTables :
-                    if exp in table :
+                    if exp in table.attributeList :
                         # a dictionary contain only {row[pk] : row[exp]} .
                         expDict = {}
                         for row in table:
