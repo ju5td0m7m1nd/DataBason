@@ -108,12 +108,31 @@ class HandleSelect:
         # need to merge
         if len(compareResult) > 1 :
             self.matchPair = self.logicalMerge(compareResult,logic)
+        elif len(compareResult) == 0:
+            if len(self.returnTables) == 1:
+                matchPair = []
+                for t in self.returnTables:
+                    for key in self.returnTables[t]:
+                        matchPair.append({t:key})
+                self.matchPair = matchPair 
+            elif len(self.returnTables) > 1 :
+                for i in range(0,len(self.returnTables)-1):
+                    matchPair = []
+                    tableName1 = self.returnTables.keys()[i]  
+                    tableName2 = self.returnTables.keys()[i+1]
+                    for pk1 in self.returnTables[tableName1].records :
+                        for pk2 in self.returnTables[tableName2].records:  
+                            matchPair.append({tableName1:pk1,tableName2:pk2})
+                self.matchPair = matchPair
         else :
             self.matchPair = self.logicalMerge(compareResult,None)
+    
     def checkSelect(self,selectQuery): 
         requestList = selectQuery['fieldNames']
         agg = selectQuery['aggFn']
         selectResult = {}
+        #store table which is already iteraed
+        PRETABLE = []
         if len(agg):
             for aggPair in agg:
                 if self.selectColumnValid([aggPair['field']]):
@@ -149,24 +168,43 @@ class HandleSelect:
                             elif request == '*':
                                 tableName = '_ALLTABLE'
                                 columnName = request
-                    
                     if columnName == '*':
+                        
                         for p in self.matchPair:
                             if tableName == '_ALLTABLE':
                                 pass 
                             else:
                                 pk = p[tableName]
                                 for c in self.returnTables[tableName].records[pk]:
+                                    OVERRIDE = False
+                                    for pt in PRETABLE:
+                                        if c in self.returnTables[pt].attributeList:
+                                            OVERRIDE = True
+                                            break
                                     if not c in selectResult:
                                         selectResult[c] = [self.returnTables[tableName].records[pk][c]]
                                     else:
-                                        selectResult[c].append(self.returnTables[tableName].records[pk][c])
+                                        value = self.returnTables[tableName].records[pk][c]
+                                        if OVERRIDE :
+                                            selectResult[c][self.matchPair.index(p)] = value 
+                                        else:
+                                            selectResult[c].append(value)
                     else:
+                        OVERRIDE = False
+                        for pt in PRETABLE:
+                            if columnName in selectResult.keys():
+                                OVERRIDE = True
+                                break
                         for p in self.matchPair:
-                            pk = p[tableName] 
-                            result.append(self.returnTables[tableName].records[pk][columnName])
-                        selectResult[request] = result     
-                          
+                            pk = p[tableName]
+                            value = self.returnTables[tableName].records[pk][columnName]
+                            if OVERRIDE:
+                                selectResult[columnName][self.matchPair.index(p)] = value
+                            else: 
+                                result.append(value)
+                        if not OVERRIDE:
+                            selectResult[columnName] = result    
+                    PRETABLE.append(tableName)    
         self.selectResult = selectResult
     
     def selectColumnValid(self,requestList):
