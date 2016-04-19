@@ -330,7 +330,7 @@ class HandleSelect:
             else:
                 for key in exp1 :
                     flag = False
-                    if type(exp1[key]['value']) != type(exp2['value']):
+                    if type(exp1[key]['value']) != type(exp2):
                         raise RuntimeError('different types and cannot be compared.')
                     if op == "=":
                         if exp1[key]['value'] == exp2:

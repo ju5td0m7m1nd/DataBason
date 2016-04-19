@@ -46,8 +46,7 @@ class Database:
             # use HandleSelect class to validate the select data     
             hs = HandleSelect(self,data)
             hs.executeQuery()
-            print hs.selectResult
-            print "123123123123"
+            #print hs.selectResult
             return hs.selectResult
         else:
             raise RuntimeError('Unkown keyword: ' + cmd)
@@ -67,7 +66,7 @@ class Database:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 ## test
 if __name__ == '__main__':
-    print"NO"
+    print "NO"
     db = Database()
     #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
     #s2 = "insert into Item values (8, 'hi', 100)"
