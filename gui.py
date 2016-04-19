@@ -132,8 +132,11 @@ class Display(FloatLayout):
 
         table = self.table
         titles = self.titles
+        if len(titles) == 0:
+            datas_dict = {0: {0: 'Result Empty'}}
+            listviewRange = 1
 
-        if dbCommand == 'select':
+        elif dbCommand == 'select':
             datas_dict = {i: {j:
                     table[titles[j]][i]
                     for j in range(len(titles))}
