@@ -143,14 +143,30 @@ class HandleSelect:
                         columnName = request.split('.')[1]
                     else :
                         for t in self.returnTables:
-                            if column in self.returnTables[t].attributeList:
+                            if request in self.returnTables[t].attributeList:
                                 tableName = t
-                                columnName = request          
-                    for p in self.matchPair:
-                        pk = p[tableName] 
-                        result.append(self.returnTables[tableName].records[pk][columnName])
-                    selectResult[request] = result     
-                      
+                                columnName = request
+                            elif request == '*':
+                                tableName = '_ALLTABLE'
+                                columnName = request
+                    
+                    if columnName == '*':
+                        for p in self.matchPair:
+                            if tableName == '_ALLTABLE':
+                                pass 
+                            else:
+                                pk = p[tableName]
+                                for c in self.returnTables[tableName].records[pk]:
+                                    if not c in selectResult:
+                                        selectResult[c] = [self.returnTables[tableName].records[pk][c]]
+                                    else:
+                                        selectResult[c].append(self.returnTables[tableName].records[pk][c])
+                    else:
+                        for p in self.matchPair:
+                            pk = p[tableName] 
+                            result.append(self.returnTables[tableName].records[pk][columnName])
+                        selectResult[request] = result     
+                          
         self.selectResult = selectResult
     
     def selectColumnValid(self,requestList):
@@ -162,7 +178,7 @@ class HandleSelect:
                     if columnName == '*':
                         continue
                     elif columnName in self.returnTables[tableName].attributeList:
-                        return True
+                        continue 
                     else :
                         raise RuntimeError ("Unknown column name: "+columnName+ " in table: "+tableName)  
                 else :
@@ -180,7 +196,8 @@ class HandleSelect:
                     elif tableCount > 1 :
                         raise RuntimeError ("Column name not distict.")
                     else:
-                        return True   
+                        continue
+        return True   
     '''
     Logic : AND OR None
     compareResult : Dict, bool
