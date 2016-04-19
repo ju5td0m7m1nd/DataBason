@@ -29,7 +29,7 @@ class Parser :
         if self.lex.matchKeyword('where'):
             self.lex.eatKeyword('where')
             pred = self.predicate()
-        print {'select':projs, 'from':tables, 'where':pred}
+#print {'select':projs, 'from':tables, 'where':pred}
         return {'select':projs, 'from':tables, 'where':pred}
 
     def projectList(self):
@@ -220,7 +220,7 @@ class Parser :
 #l = Parser("insert into student (id, name) values (-2147483648, 'Mike Portnoy 123')")
 #d = {}
 #l = Parser("select count(NAME) from AUTHOR where NATIONALITY = 'Taiwan'")
-#l = Parser("select * from students as s where s.id <> 10")
+#l = Parser("select * from students where id < 5")
 #l.parse()
 #print l.lex.tokens
 '''try:
