@@ -266,13 +266,17 @@ class HandleSelect:
                 for cr in compareResult:
                     if not len(cr):
                         return []
-                    if not len(resultStandard):
-                        for pair in cr:
-                            resultStandard.append(pair)
-                    else:
-                        for r in resultStandard:
-                            if not r in cr:
-                                resultStandard.remove(r)
+                    #if not len(resultStandard):
+                    #    for pair in cr:
+                    #        resultStandard.append(pair)
+                    #else:
+                    #    for r in resultStandard:
+                    #        if not r in cr:
+                    #            resultStandard.remove(r)
+                for pair1 in compareResult[0]:
+                    for pair2 in compareResult[1]:
+                        if pair1 == pair2 :
+                            resultStandard.append(pair1)
                 return resultStandard
             elif logic == 'or':
                 for cr in compareResult:
@@ -302,6 +306,8 @@ class HandleSelect:
                     for key2 in exp2:
                         flag = False
                         value2 = exp2[key2]
+                        if type(value1['value']) != type(value2['value']):
+                            raise RuntimeError("different types and cannot be compared.")
                         if op == "=":
                             if value1['value'] == value2['value']:
                                 flag = True 
@@ -323,8 +329,9 @@ class HandleSelect:
                             pairList.append({tableName_exp1:key1,tableName_exp2:key2})
             else:
                 for key in exp1 :
-                    value = exp1[key]
                     flag = False
+                    if type(exp1[key]['value']) != type(exp2['value']):
+                        raise RuntimeError('different types and cannot be compared.')
                     if op == "=":
                         if exp1[key]['value'] == exp2:
                             flag = True
