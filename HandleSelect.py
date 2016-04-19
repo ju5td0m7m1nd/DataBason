@@ -422,10 +422,6 @@ class HandleSelect:
                         records = self.returnTables[table].records
                         for row in records:
                             expDict[row] = {'tableName':table,'value':records[row][exp]}
-<<<<<<< HEAD
                         return expDict
-=======
-                        return expDict                
->>>>>>> d3a91059e59e9693e56e1282bcbd95f0f815e74b
                     else :
                         raise RuntimeError ("DetermineExpression : Column "+exp+ " not in table")

@@ -90,9 +90,7 @@ class Display(FloatLayout):
                 if db.command == 'insert':
                     table_title.text = self.table.tableName
                 if db.command == 'select':
-
-
-
+                    pass
                 self.error = False
             except RuntimeError as e:
                 self.error = True
