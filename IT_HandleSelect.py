@@ -33,6 +33,11 @@ class TestHandleSelect(unittest.TestCase):
         query = {'where': {'term2': {}, 'term1': {'operator': '<', 'exp2': 3, 'exp1': 'students.id'}, 'logic': ''}, 'from': [ {'alias':'','tableName': 'students'}],'select': {'aggFn': [{'type':'count','field':'students.id'}], 'fieldNames': []}}
         self.hs = HandleSelect.HandleSelect(self.db,query)
         self.hs.executeQuery()
+    def test_1_1_0(self):
+        query = {'where': {}, 'logic': ''}, 'from': [ {'alias':'','tableName': 'students'}],'select': {'aggFn': [{'type':'count','field':'students.id'}], 'fieldNames': []}}
+        self.hs = HandleSelect.HandleSelect(self.db,query)
+        self.hs.executeQuery()
+
 
 
 if __name__ == '__main__' and __package__ is None:
