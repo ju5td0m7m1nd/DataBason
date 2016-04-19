@@ -113,7 +113,7 @@ class HandleSelect:
             if len(self.returnTables) == 1:
                 matchPair = []
                 for t in self.returnTables:
-                    for key in self.returnTables[t]:
+                    for key in self.returnTables[t].records:
                         matchPair.append({t:key})
                 self.matchPair = matchPair 
             elif len(self.returnTables) > 1 :
@@ -403,8 +403,9 @@ class HandleSelect:
                     if exp in self.returnTables[table].attributeList :
                         # a dictionary contain only {row[pk] : row[exp]} .
                         expDict = {}
-                        for row in table:
-                            expDict[row] = table[exp]
+                        records = self.returnTables[table].records
+                        for row in records:
+                            expDict[row] = records[exp]
                             return expDict
                     else :
                         raise RuntimeError ("DetermineExpression : Column "+exp+ " not in table")
