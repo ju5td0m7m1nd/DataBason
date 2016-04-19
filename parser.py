@@ -35,7 +35,7 @@ class Parser :
     def projectList(self):
         fieldNames = []
         aggFn = []
-        if self.lex.matchId():
+        if self.lex.matchId() or self.lex.matchDelim('*'):
             fieldNames.append(self.projectField())
         else:
             aggFn.append(self.aggregationFn())
@@ -220,6 +220,7 @@ class Parser :
 #l = Parser("insert into student (id, name) values (-2147483648, 'Mike Portnoy 123')")
 #d = {}
 #l = Parser("select count(NAME) from AUTHOR where NATIONALITY = 'Taiwan'")
+#l = Parser("select * from students as s where s.id <> 10")
 #l.parse()
 #print l.lex.tokens
 '''try:
