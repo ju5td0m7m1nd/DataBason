@@ -86,8 +86,13 @@ class Display(FloatLayout):
                 self.table = db.processQuery(query)
                 if db.command == 'create':
                     self.sound_control('create')
-                #if db.command == 'insert':
-                table_title.text = self.table.tableName
+                    table_title.text = self.table.tableName
+                if db.command == 'insert':
+                    table_title.text = self.table.tableName
+                if db.command == 'select':
+
+
+
                 self.error = False
             except RuntimeError as e:
                 self.error = True

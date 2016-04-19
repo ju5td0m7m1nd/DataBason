@@ -19,7 +19,7 @@ class Aggregation:
         self.counted = len(match_pair)
         # handle return table (rename AS blablabla)
         returnCol = 'COUNT('+column_name+')'
-        to_return = {self.counted: {returnCol: self.counted}}
+        to_return = {returnCol: [self.counted]}
         return to_return
 
     def sum(self, returnTable, column_name, match_pair, query_from):
@@ -29,11 +29,11 @@ class Aggregation:
         self.to_sum = 0
         b_f = False
         # sum them up
-        for k in returnTable[query_from]['records'].keys():
+        for k in returnTable[query_from].records.keys():
             for m in match_pair:
                 if k == m[query_from]:
                     try:
-                        self.to_sum += returnTable[query_from]['records'][k][column_name]
+                        self.to_sum += returnTable[query_from].records[k][column_name]
                     except TypeError:
                         self.to_sum = 0
                         b_f = True
@@ -43,7 +43,7 @@ class Aggregation:
                 break
 
         returnCol = 'SUM('+column_name+')'
-        to_return = {self.to_sum: {returnCol: self.to_sum}}
+        to_return = {returnCol: [self.to_sum]}
         return to_return
 
 

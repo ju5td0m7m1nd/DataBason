@@ -149,7 +149,7 @@ class HandleSelect:
                                 columnName = aggField
                     aggInstance = aggregation.Aggregation()
                     if aggType == 'count':
-                        selectResult[aggField] = aggInstance.count(self.returnTables,columnName,self.matchPair)
+                        selectResult[aggField] = aggInstance.count(self.returnTables, columnName, self.matchPair)
                     elif aggType == 'sum':
                         selectResult[aggField] = aggInstance.sum(self.returnTables,columnName,self.matchPair,tableName) 
                     else :
@@ -321,6 +321,9 @@ class HandleSelect:
                     elif op == "<":
                         if exp1[key]['value'] < exp2:
                             flag = True
+                    elif op == "<>":
+                        if exp1[key]['value'] != exp2:
+                            flag = True
                     else :
                         raise RuntimeError("filterRow : Invalid operation "+op+" ")
                     if flag:
@@ -405,7 +408,7 @@ class HandleSelect:
                         expDict = {}
                         records = self.returnTables[table].records
                         for row in records:
-                            expDict[row] = records[exp]
-                            return expDict
+                            expDict[row] = {'tableName':table,'value':records[row][exp]}
+                        return expDict
                     else :
                         raise RuntimeError ("DetermineExpression : Column "+exp+ " not in table")
