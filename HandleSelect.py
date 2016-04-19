@@ -174,7 +174,19 @@ class HandleSelect:
                     if columnName == '*':
                         for p in self.matchPair:
                             if tableName == '_ALLTABLE':
-                                pass 
+                                for t in p :
+                                    pk = p[t] 
+                                    for c in self.returnTables[t].records[pk]:
+                                        if not c in selectResult:
+                                            selectResult[c] = [self.returnTables[t].records[pk][c]]
+                                        else:
+                                            value = self.returnTables[t].records[pk][c]
+                                            index = self.matchPair.index(p)
+                                            listLength = len(selectResult[c])
+                                            if index == listLength :
+                                                selectResult[c].append(value)
+                                            else:
+                                                selectResult[c][index] = value                 
                             else:
                                 pk = p[tableName]
                                 for c in self.returnTables[tableName].records[pk]:

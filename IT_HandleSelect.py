@@ -11,7 +11,6 @@ class TestHandleSelect(unittest.TestCase):
     def test_0_2_0(self):
         query = {'where': {'term2': {}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['students.name', 'teachers.name']}}
         self.hs = HandleSelect.HandleSelect(self.db,query)
-        print("no where condition")
         self.hs.executeQuery()
     def test_1_2_0(self):
         query = {'where': {'term2': {}, 'term1': {'operator': '=', 'exp2': 'teachers.name', 'exp1': 'teachername'}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['teachername', 'teachers.id']}}
