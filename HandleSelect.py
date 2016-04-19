@@ -151,9 +151,9 @@ class HandleSelect:
                                 columnName = '*' 
                     aggInstance = aggregation.Aggregation()
                     if aggType == 'count':
-                        selectResult[aggField] = aggInstance.count(self.returnTables,columnName,self.matchPair)
+                        selectResult = aggInstance.count(self.returnTables,columnName,self.matchPair)
                     elif aggType == 'sum':
-                        selectResult[aggField] = aggInstance.sum(self.returnTables,columnName,self.matchPair,tableName) 
+                        selectResult = aggInstance.sum(self.returnTables,columnName,self.matchPair,tableName) 
                     else :
                         raise RuntimeError ("CheckSelect : Unknown aggregation type.")             
         else:
