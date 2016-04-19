@@ -45,30 +45,30 @@ class Display(FloatLayout):
     
     
     def mute(self):
-        if self.sound.volume == 1:
-            self.sound.volume = 0
-        elif self.sound.volume == 0:
-            self.sound.volume = 1
-    
+        if self.createsound.volume == 1:
+            self.createsound.volume = 0
 
-    def release_sound(self):
-        if self.sound:
-            self.sound.stop()
-            self.sound.unload()
-            self.sound = None
+        if self.errorsound.volume == 1:
+            self.errorsound.volume = 0
 
-    def sound_control(self, sound_file):
-        if self.sound:
-            self.release_sound()
+    def sound_control(self, which):
+
+        if self.createsound is None:
+            self.createsound = SoundLoader.load("table_created.mp3")
+        if self.errorsound is None:
+            self.errorsound = SoundLoader.load("runtimeerror.mp3")
         
-        self.sound = SoundLoader.load(sound_file)
-        if self.sound.status != 'stop':
-            self.sound.stop()
+        if self.createsound.status != 'stop':
+            self.createsound.stop()
+        if self.errorsound.status != 'stop':
+            self.errorsound.stop()
 
-        self.sound.play()
+        if which == 'create':
+            self.createsound.play()
+        if which == 'error':
+            self.errorsound.play()
 
     def update(self):
-        self.release_sound()
 
         # clear content avoid multiple listview.
         self.data_box.clear_widgets()
