@@ -206,6 +206,11 @@ class TestHandleSelect(unittest.TestCase):
         query = {'where': {'term2': {'operator':'>','exp2':'students.id','exp1':1}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['students.name', 'teachers.name']}}
         hs = HandleSelect.HandleSelect(self.db,query)
         hs.executeQuery() 
+    def test_ExecuteQuery_agg(self):
+        query = {'where': {'term2': {'operator':'>','exp2':'students.id','exp1':1}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [{'type':'count','field':'students.id'}], 'fieldNames': []}}
+        hs = HandleSelect.HandleSelect(self.db,query)
+        hs.executeQuery() 
+
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()

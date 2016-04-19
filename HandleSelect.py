@@ -1,5 +1,5 @@
 import database
-
+import aggregation
 
 '''
 Handle query flow :
@@ -111,23 +111,45 @@ class HandleSelect:
             self.matchPair = self.logicalMerge(compareResult,None)
     def checkSelect(self,selectQuery): 
         requestList = selectQuery['fieldNames']
-        selectResult = {} 
-        if self.selectColumnValid(requestList):
-            for request in requestList:
-                result = []
-                if '.' in request :
-                    tableName = request.split('.')[0] 
-                    columnName = request.split('.')[1]
-                else :
-                    for t in self.returnTables:
-                        if column in self.returnTables[t].attributeList:
-                            tableName = t
-                            columnName = request          
-                for p in self.matchPair:
-                    pk = p[tableName] 
-                    result.append(self.returnTables[tableName].records[pk][columnName])
-                selectResult[request] = result     
-                  
+        agg = selectQuery['aggFn']
+        selectResult = {}
+        if len(agg):
+            for aggPair in agg:
+                if self.selectColumnValid([aggPair['field']]):
+                    aggType = aggPair['type']
+                    aggField = aggPair['field'] 
+                    if '.' in aggField :
+                        tableName = aggField.split('.')[0] 
+                        columnName = aggField.split('.')[1]
+                    else :
+                        for t in self.returnTables:
+                            if aggField in self.returnTables[t].attributeList:
+                                tableName = t
+                                columnName = aggField
+                    aggInstance = aggregation.Aggregation()
+                    if aggType == 'count':
+                        selectResult[aggField] = aggInstance.count(self.returnTables,columnName,self.matchPair)
+                    elif aggType == 'sum':
+                        selectResult[aggField] = aggInstance.sum(self.returnTables,columnName,self.matchPair,tableName) 
+                    else :
+                        raise RuntimeError ("Unknown aggregation type.")             
+        else:
+            if self.selectColumnValid(requestList):
+                for request in requestList:
+                    result = []
+                    if '.' in request :
+                        tableName = request.split('.')[0] 
+                        columnName = request.split('.')[1]
+                    else :
+                        for t in self.returnTables:
+                            if column in self.returnTables[t].attributeList:
+                                tableName = t
+                                columnName = request          
+                    for p in self.matchPair:
+                        pk = p[tableName] 
+                        result.append(self.returnTables[tableName].records[pk][columnName])
+                    selectResult[request] = result     
+                      
         self.selectResult = selectResult
     
     def selectColumnValid(self,requestList):
@@ -136,23 +158,28 @@ class HandleSelect:
                 tableName = column.split('.')[0] 
                 columnName = column.split('.')[1] 
                 if tableName in self.returnTables :
-                    if columnName in self.returnTables[tableName].attributeList:
+                    if columnName == '*':
+                        continue
+                    elif columnName in self.returnTables[tableName].attributeList:
                         return True
                     else :
                         raise RuntimeError ("Unknown column name: "+columnName+ " in table: "+tableName)  
                 else :
                     raise RuntimeError("Unknown table name "+tableName )
             else :
-                tableCount = 0
-                for table in self.returnTables :
-                    if  column in self.returnTables[table].attributeList: 
-                        tableCount = tableCount + 1 
-                if tableCount == 0 :
-                    raise RuntimeError ("Unknown column name.")
-                elif tableCount > 1 :
-                    raise RuntimeError ("Column name not distict.")
+                if column == '*':
+                    continue
                 else:
-                    return True   
+                    tableCount = 0
+                    for table in self.returnTables :
+                        if  column in self.returnTables[table].attributeList: 
+                            tableCount = tableCount + 1 
+                    if tableCount == 0 :
+                        raise RuntimeError ("Unknown column name.")
+                    elif tableCount > 1 :
+                        raise RuntimeError ("Column name not distict.")
+                    else:
+                        return True   
     '''
     Logic : AND OR None
     compareResult : Dict, bool
