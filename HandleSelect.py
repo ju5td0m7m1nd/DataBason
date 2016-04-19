@@ -113,7 +113,7 @@ class HandleSelect:
             if len(self.returnTables) == 1:
                 matchPair = []
                 for t in self.returnTables:
-                    for key in self.returnTables[t]:
+                    for key in self.returnTables[t].records:
                         matchPair.append({t:key})
                 self.matchPair = matchPair 
             elif len(self.returnTables) > 1 :

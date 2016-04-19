@@ -34,7 +34,7 @@ class TestHandleSelect(unittest.TestCase):
         self.hs = HandleSelect.HandleSelect(self.db,query)
         self.hs.executeQuery()
     def test_1_1_0(self):
-        query = {'where': {}, 'logic': ''}, 'from': [ {'alias':'','tableName': 'students'}],'select': {'aggFn': [{'type':'count','field':'students.id'}], 'fieldNames': []}}
+        query = {'where': {}, 'from': [ {'alias':'','tableName': 'students'}],'select': {'aggFn': [], 'fieldNames': ['id']}}
         self.hs = HandleSelect.HandleSelect(self.db,query)
         self.hs.executeQuery()
 
