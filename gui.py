@@ -9,6 +9,7 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 from kivy.core.audio import SoundLoader
 from kivy.properties import ObjectProperty
+from kivy.properties import BooleanProperty
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
 from kivy.adapters.dictadapter import DictAdapter
@@ -24,8 +25,8 @@ class Display(FloatLayout):
     
     query_in = ObjectProperty()
     data_box = ObjectProperty()
-    createsound = ObjectProperty(None, allownone=True)
-    errorsound = ObjectProperty(None, allownone=True)
+    sound = ObjectProperty(None, allownone=True)
+    mute_flag = not BooleanProperty()
     
     # dismiss pop up of the load file area
     def dismiss_popup(self):
@@ -44,30 +45,24 @@ class Display(FloatLayout):
 
         self.dismiss_popup()
     
-    
     def mute(self):
-        if self.createsound.volume == 1:
-            self.createsound.volume = 0
-
-        if self.errorsound.volume == 1:
-            self.errorsound.volume = 0
+        self.mute_flag = not self.mute_flag
 
     def sound_control(self, which):
-
-        if self.createsound is None:
-            self.createsound = SoundLoader.load("table_created.mp3")
-        if self.errorsound is None:
-            self.errorsound = SoundLoader.load("runtimeerror.mp3")
-        
-        if self.createsound.status != 'stop':
-            self.createsound.stop()
-        if self.errorsound.status != 'stop':
-            self.errorsound.stop()
-
         if which == 'create':
-            self.createsound.play()
-        if which == 'error':
-            self.errorsound.play()
+            self.sound = SoundLoader.load("table_created.mp3")
+        elif which == 'insert':
+            self.sound = SoundLoader.load("data_inserted.mp3")
+        elif which == 'select':
+            self.sound = SoundLoader.load("data_selected.mp3")
+        else:
+            self.sound = SoundLoader.load("runtimeerror.mp3")
+
+        if self.sound.status != 'stop':
+            self.sound.stop()
+        
+        if not self.mute_flag:
+            self.sound.play()
 
     def update(self):
 
@@ -88,8 +83,10 @@ class Display(FloatLayout):
                     self.sound_control('create')
                     table_title.text = self.table.tableName
                 if db.command == 'insert':
+                    self.sound_control('insert')
                     table_title.text = self.table.tableName
                 if db.command == 'select':
+                    self.sound_control('select')
                     table_title.text = "SELECT result"
                 self.error = False
             except RuntimeError as e:
