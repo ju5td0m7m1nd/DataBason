@@ -13,7 +13,6 @@ class TestHandleSelect(unittest.TestCase):
             self.db.processQuery('insert into students values (4, "Douglas", "Sun Hong Wu")')      
             self.db.processQuery("insert into teachers values (999, 'Sun Hong Wu')")      
             self.db.processQuery("insert into teachers values (888, 'Sun Hong Lai')")      
-        
     def testFrom(self):
         
         #Query without AS
@@ -195,9 +194,9 @@ class TestHandleSelect(unittest.TestCase):
          
             self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
             self.hs.checkWhere(query['where'])
-            expected = {'students':{1:{'id':1,'name':'frank','teachername':'Jason Chang'},3:{'id':3,'name':'Su4','teachername':'Sun Hong Lai'},4:{'id':4,'name':'Douglas','teachername':'Sun Hong Wu'}},'teachers':{888:{'id':888,'name':'Sun Hong Lai'},999:{'id':999,'name':'Sun Hong Wu'}}} 
+            expected = [{'students':1,'teachers':888}, {'students':3,'teachers':888},{'students':4,'teachers':888},{'students':1,'teachers':999},{'students':3,'teachers':999},{'students':4,'teachers':999}] 
             for t in self.hs.returnTables:
-                self.assertEqual(self.hs.returnTables[t].records,expected[t])
+                self.assertEqual(self.hs.matchPair,expected)
               
     def test_ExecuteQuery(self):
         query = {'where': {'term2': {'operator':'=','exp2':'teacherName','exp1':'teachers.name'}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['students.name', 'teachers.name']}}
@@ -207,7 +206,6 @@ class TestHandleSelect(unittest.TestCase):
         query = {'where': {'term2': {'operator':'>','exp2':'students.id','exp1':1}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['students.name', 'teachers.name']}}
         hs = HandleSelect.HandleSelect(self.db,query)
         hs.executeQuery() 
-
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()

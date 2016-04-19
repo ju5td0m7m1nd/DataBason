@@ -76,15 +76,32 @@ class HandleSelect:
                     #Directly do logical operation
                     RESULT = False
                     if op == "=":
-                        compareResult.append(exp1 == exp2 )
+                        RESULT = (exp1 == exp2 )
                     elif op == ">":
-                        compareResult.append(exp1 > exp2 )
+                        RESULT = (exp1 > exp2 )
                     elif op == "<":
-                        compareResult.append(exp1 < exp2 )
+                        RESULT = (exp1 < exp2 )
                     elif op == "<>":
-                        compareResult.append 
+                        RESULT = (exp1 != exp2 )
+                    pairList = []
+                    if RESULT :
+                        # Need an efficient way to join 2 table.
+                        for t in self.returnTables:
+                            # If pair list is not init.
+                            if not len(pairList):
+                                for key in self.returnTables[t].records:
+                                    pairList.append({t:key})
+                            else :
+                                tempList = []  
+                                for key in self.returnTables[t].records:
+                                    for l in pairList:
+                                        for pairKey in l:
+                                            tempList.append({pairKey:l[pairKey],t:key})
+                                pairList = tempList     
+                    compareResult.append(pairList) 
                 else:
                     compareResult.append(self.filterRow(exp1,exp2,op))
+                self.compareResult = compareResult
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
@@ -142,82 +159,37 @@ class HandleSelect:
     '''
     def logicalMerge(self,compareResult,logic):
         if logic == None:
-            if type(compareResult[0]) is bool:
-                if compareResult[0] == True:
-                    return compareResult[0]
-                # if the compare result only has false
-                # it should return nothing.
-                else :
-                    return []
-            # if the compareResult type is dict, 
-            # Update the remain compare result.
-            elif type(compareResult[0]) is list:
+            if type(compareResult[0]) is list:
                 return compareResult[0]
             else:
                 raise RuntimeError ('Merge with unknow type')
         else :
-            #take one result as standard
-            for r in compareResult:
-                if type(r) is list:
-                    resultStandard = r
-                    break
-                else:
-                    resultStandard = None
-            # Fist of all , if resultStandard doesn't assign any list.
-            # Which means all of the results is bool.
-
+            resultStandard = []
             if logic == 'and':
-                if not resultStandard :
-                    return self._HandleBoolOnlyResult(logic, compareResult)
-                else: 
-                    for r in resultStandard:
-                        for cr in compareResult:
-                            if type(cr) is bool:
-                                if cr == False:
-                                    return [] 
-                            elif not r in cr:
-                                resultStandard.remove(r)                   
-                    return resultStandard
+                for cr in compareResult:
+                    if not len(cr):
+                        return []
+                    if not len(resultStandard):
+                        for pair in cr:
+                            resultStandard.append(pair)
+                    else:
+                        for r in resultStandard:
+                            if not r in cr:
+                                resultStandard.remove(r)
+                return resultStandard
             elif logic == 'or':
-                if not resultStandard :
-                    return self._HandleBoolOnlyResult(logic, compareResult)
-                else: 
-                    for cr in compareResult:
-                        if type(cr) is bool:
-                            continue 
-                        else:
-                            for pair in cr:
-                                if not pair in resultStandard:
-                                    resultStandard.append(pair)                   
-                    return resultStandard
+                for cr in compareResult:
+                    if not len(resultStandard):
+                        for pair in cr:
+                            resultStandard.append(pair)
+                    else:
+                        for pair in cr:
+                            if not pair in resultStandard:
+                                resultStandard.append(pair)                   
+                return resultStandard
             else :
                 raise RuntimeError ('Unknown logic')
-    '''
-    when all of the results are bool,
-    we only need to determine whether is true or false
-    that is, return all set or none set.
-    ''' 
-    def _HandleBoolOnlyResult(self,logic,compareResult):  
-        if logic == "and":
-            BOOLFLAG = True
-            for r in compareResult:
-                BOOLFLAG = BOOLFLAG and r
-            if BOOLFLAG :
-                return True
-            else :
-                return []
-        elif logic == "or":
-            BOOLFLAG = None
-            for r in compareResult:
-                if BOOLFLAG == None:
-                    BOOLFLAG = r
-                BOOLFLAG = BOOLFLAG or r
-            if BOOLFLAG :
-                return True
-            else :
-                return []
-        else:
-            raise RuntimeError ("Unknown logic " + logic)  
+  
     '''
     Return a filtered dict
     '''
