@@ -22,7 +22,7 @@ class Aggregation:
             for pair in match_pair:
                 key = pair[table_name]
                 value = returnTable[table_name].records[key][column_name]
-                if value :
+                if value != None:
                     self.counted += 1
         
         # handle return table (rename AS blablabla)
