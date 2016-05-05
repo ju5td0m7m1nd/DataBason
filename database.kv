@@ -1,0 +1,67 @@
+#:kivy 1.9
+
+<Display>:
+    query_in: query_text_input
+    data_box: inside_box_layout
+
+    FloatLayout:
+
+        TextInput:
+            id: query_text_input
+            font_size: 20
+            size_hint: 0.8, 0.4
+            pos: root.x, root.top - self.height
+            hint_text: "Your SQL command here, please~"
+
+        Button:
+            id: send_button
+            text: "send!"
+            size_hint: 0.2, 0.2
+            pos: root.x + query_text_input.width, root.top - self.height
+            on_release: root.update()
+
+        Button:
+            id: load_sql
+            text: "load sql"
+            size_hint: 0.2, 0.1
+            pos: root.x + query_text_input.width, root.top - self.height - send_button.height
+            on_release: root.show_load()
+
+        
+        Button:
+            id: mute_button
+            text: "mute/unmute"
+            size_hint: 0.2, 0.1
+            pos: root.x + query_text_input.width, root.top - self.height - send_button.height - load_sql.height
+            on_release: root.mute()
+
+        BoxLayout:
+            orientation: "vertical"
+            id: inside_box_layout
+            padding: 15
+            size_hint: 1, 0.6
+            
+            Label:
+                font_size: 40
+                #size_hint: 1, 0.o1
+                color: 0, 1, 0, 1
+                text: "DATABASON"
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserIconView:
+            id: filechooser
+        
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+                
+            Button:
+                text: "Load File"
+                on_release: root.load(filechooser.path, filechooser.selection)

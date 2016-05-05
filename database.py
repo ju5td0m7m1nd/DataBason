@@ -1,8 +1,9 @@
 import glob
 import pickle
 import re
-from parser import Parser
+from sqlparser import Parser
 from table_schema import Table
+from HandleSelect import *
 
 class Database:
     '''
@@ -43,6 +44,10 @@ class Database:
             self.command = 'select'
             data = parser.parse()
             # use HandleSelect class to validate the select data     
+            hs = HandleSelect(self,data)
+            hs.executeQuery()
+            #print hs.selectResult
+            return hs.selectResult
         else:
             raise RuntimeError('Unkown keyword: ' + cmd)
 
@@ -60,8 +65,12 @@ class Database:
         with open(self.file_dir + name + '.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 ## test
-'''db = Database()
-s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
-s2 = "insert into Item values (8, 'hi', 100)"
-db.processQuery(s)
-db.processQuery(s2)'''
+if __name__ == '__main__':
+    print "NO"
+    db = Database()
+    #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
+    #s2 = "insert into Item values (8, 'hi', 100)"
+    #db.processQuery(s)
+    #db.processQuery(s2)
+    select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
+    db.processQuery(select)
