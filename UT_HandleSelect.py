@@ -176,13 +176,11 @@ class TestHandleSelect(unittest.TestCase):
     '''
     def test_CheckWhere_1table(self): 
         query = {'where': {'term2': {}, 'term1': {'operator': '=', 'exp2': 'teacherName', 'exp1': 'teachers.name'}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
-     
         self.hs.loadTable([{'alias':'','tableName':'teachers'},{'alias':'','tableName':'students'}])
         self.hs.checkWhere(query['where']) 
         expected = [{'students':3,'teachers':888},
                     {'students':4,'teachers':999}] 
         self.assertEqual(self.hs.matchPair,expected)  
-
     def test_CheckWhere_1bool_F(self): 
             query = {'where': {'term2': {'operator':'>','exp2':900,'exp1':800}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [], 'fieldNames': ['name', 'teachers.name']}}
          
@@ -210,7 +208,6 @@ class TestHandleSelect(unittest.TestCase):
         query = {'where': {'term2': {'operator':'>','exp2':'students.id','exp1':1}, 'term1': {}, 'logic': ''}, 'from': [{'alias': '', 'tableName': 'students'}, {'alias': '', 'tableName': 'teachers'}], 'select': {'aggFn': [{'type':'count','field':'students.id'}], 'fieldNames': []}}
         hs = HandleSelect.HandleSelect(self.db,query)
         hs.executeQuery() 
-
 
 if __name__ == '__main__' and __package__ is None:
     unittest.main()

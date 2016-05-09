@@ -64,17 +64,16 @@ class HandleSelect:
                     exp1 = self.determineExpression(c['exp1'])
                     exp2 = self.determineExpression(c['exp2'])
                     op = c['operator']
-                    
-                    # Always make exp1 as dict
-                    # Case 1, exp1 : int exp2 : dict swap(exp1,exp2)
-                    # Case 2, exp1 : str exp2 : dict swap(exp1,exp2)    
-                    if type(exp2) is dict :                 
+                    # Always make exp1 as list 
+                    # Case 1, exp1 : int exp2 : list swap(exp1,exp2)
+                    # Case 2, exp1 : str exp2 : list swap(exp1,exp2)    
+                    if type(exp2) is list :                 
                         temp = exp2
                         exp2 = exp1
                         exp1 = temp                    
                     
                     # Due to previous swap, if exp1 not dict, and both of them is not dict
-                    if not type(exp1) is dict:
+                    if not type(exp1) is list:
                         #Directly do logical operation
                         RESULT = False
                         if op == "=":
@@ -258,9 +257,10 @@ class HandleSelect:
     def logicalMerge(self,compareResult,logic):
         if logic == None:
             if type(compareResult[0]) is list:
+                print compareResult[0]
                 return compareResult[0]
             else:
-                raise RuntimeError ('logicalMerge : Merge with unknow type')
+                raise RuntimeError ('logicalMerge : Merge with unknown type')
         else :
             resultStandard = []
             if logic == 'and':
@@ -295,68 +295,80 @@ class HandleSelect:
     '''
     Return a filtered dict
     '''
-
     def filterRow(self, exp1,exp2,op):
             #Create a new dict to store compare results.
             #Init
-            pairList = [] 
-            if type(exp2) is dict:
-                #Iterate dict to compare.
-                for key1 in exp1 :
-                    value1 = exp1[key1]
-                    for key2 in exp2:
-                        flag = False
-                        value2 = exp2[key2]
-                        if type(value1['value']) != type(value2['value']):
-                            raise RuntimeError("different types and cannot be compared.")
-                        if op == "=":
-                            if value1['value'] == value2['value']:
-                                flag = True 
-                        elif op == ">":
-                            if value1['value'] > value2['value']:
-                                flag = True 
-                        
-                        elif op == "<":
-                            if value1['value'] < value2['value']:
-                                flag = True 
-                        elif op == "<>" :
-                            if value1['value'] != value2['value']:
-                                flag = True
-                        else :
-                            raise RuntimeError("FilterRow : Invalid operation " +op+" ")
-                        if flag :
-                            tableName_exp1 = value1['tableName']
-                            tableName_exp2 = value2['tableName']
-                            pairList.append({tableName_exp1:key1,tableName_exp2:key2})
+            pairList = []
+            if type(exp2) is list:
+                # use sorted list to accelerate equality join
+                if op == '=':
+                    exp1_sorted = sorted(exp1, key = lambda x : x['value']) 
+                    exp2_sorted = sorted(exp2, key = lambda x : x['value'])
+                    i = 0
+                    j = 0
+                    while i < len(exp1_sorted) and j < len(exp2_sorted):
+                        record1 = exp1_sorted[i]
+                        record2 = exp2_sorted[j]
+                        if record1['value'] == record2['value'] :
+                            pairList.append({record1['tableName'] : record1['pk'],record2['tableName']:record2['pk']})
+                            i += 1
+                            j += 1
+                        elif record1['value'] > record2['value']:
+                            j += 1
+                        elif record1['value'] < record2['value']:
+                            i += 1  
+                else : 
+                    for dict1 in exp1 :
+                        value1 = dict1['value']
+                        for dict2 in exp2:
+                            flag = False
+                            value2 = dict2['value']
+                            if type(value1) != type(value2):
+                                raise RuntimeError("different types and cannot be compared.")
+                            if op == ">":
+                                if value1 > value2:
+                                    flag = True 
+                            elif op == "<":
+                                if value1 < value2:
+                                    flag = True 
+                            elif op == "<>" :
+                                if value1 != value2:
+                                    flag = True
+                            else :
+                                raise RuntimeError("FilterRow : Invalid operation " +op+" ")
+                            if flag :
+                                tableName_exp1 = dict1['tableName']
+                                tableName_exp2 = dict2['tableName']
+                                pairList.append({tableName_exp1:dict1['pk'],tableName_exp2:dict2['pk']})
             else:
-                for key in exp1 :
+                for dict1 in exp1 :
                     flag = False
-                    if type(exp1[key]['value']) != type(exp2):
+                    if type(dict1['value']) != type(exp2):
                         raise RuntimeError('different types and cannot be compared.')
                     if op == "=":
-                        if exp1[key]['value'] == exp2:
+                        if dict1['value'] == exp2:
                             flag = True
                     elif op == ">":
-                        if exp1[key]['value'] > exp2:
+                        if dict1['value'] > exp2:
                             flag = True
                     elif op == "<":
-                        if exp1[key]['value'] < exp2:
+                        if dict1['value'] < exp2:
                             flag = True
                     elif op == "<>":
-                        if exp1[key]['value'] != exp2:
+                        if dict1['value'] != exp2:
                             flag = True
                     else :
                         raise RuntimeError("filterRow : Invalid operation "+op+" ")
                     if flag:
-                        tableName = exp1[key]['tableName']
+                        tableName = dict1['tableName']
                         #Need to join table.
                         if len(self.returnTables) > 1:
                             for t in self.returnTables:
                                 if not t == tableName:
                                     for recordsKey in self.returnTables[t].records:   
-                                        pairList.append({tableName:key,t:recordsKey})
+                                        pairList.append({tableName:dict1['pk'],t:recordsKey})
                         else :
-                            pairList.append({tableName:key})         
+                            pairList.append({tableName:dict1['pk']})         
             return pairList 
 
     '''
@@ -388,17 +400,18 @@ class HandleSelect:
             if prefix in self.returnTables:
                 #Check column exist
                 if  name in self.returnTables[prefix].attributeList :
-                    expDict = {}
+                    expList = []
                     records = self.returnTables[prefix].records
                     for row in records:    
-                        expDict[row] = {'tableName':prefix,'value':records[row][name]}
-                    return expDict
+                        expList.append({'tableName':prefix,'value':records[row][name],'pk':row})
+                    return expList
                 else:
                     raise RuntimeError ("DetermineExpression : Column %s not in Table %s",name,prefix)
             else :
                 raise RuntimeError ("DetermineExpression : Table: " + prefix + " doesn't be loaded")
         else :
             exp = exp.lower()
+            expList = []
             # No prefix need to check exist in either table a or b.
             if len(self.returnTables) > 1:
                 # A flag to record if there are more than 1 table have some column.
@@ -415,21 +428,19 @@ class HandleSelect:
                 elif flag == 0 :
                     raise RuntimeError ("DetermineExpression : No match column")
                 else:
-                    expDict = {}
                     records = self.returnTables[tableName].records
                     for row in records:
-                        expDict[row] = {'tableName':tableName,'value':records[row][exp]}
-                    return expDict                
+                        expList.append({'tableName':tableName,'value':records[row][exp],'pk':row})
+                    return expList 
   
             else :
                 # check column in table
                 for table in self.returnTables :
                     if exp in self.returnTables[table].attributeList :
                         # a dictionary contain only {row[pk] : row[exp]} .
-                        expDict = {}
                         records = self.returnTables[table].records
                         for row in records:
-                            expDict[row] = {'tableName':table,'value':records[row][exp]}
-                        return expDict
+                            expList.append({'tableName':table,'value':records[row][exp],'pk':row})
+                        return expList
                     else :
                         raise RuntimeError ("DetermineExpression : Column "+exp+ " not in table")
