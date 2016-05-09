@@ -53,7 +53,8 @@ class HandleSelect:
         self.returnTables = returnTables 
     
     def checkWhere(self,queryWhere):
-        compareResult = [] 
+        print "CHECKWHERE"
+        compareResult = []
         if len(queryWhere):  
             condition = []
             logic = queryWhere['logic']
@@ -115,7 +116,8 @@ class HandleSelect:
                 for t in self.returnTables:
                     for key in self.returnTables[t].records:
                         matchPair.append({t:key})
-                self.matchPair = matchPair 
+                self.matchPair = matchPair
+                del matchPair
             elif len(self.returnTables) > 1 :
                 for i in range(0,len(self.returnTables)-1):
                     matchPair = []
@@ -125,10 +127,12 @@ class HandleSelect:
                         for pk2 in self.returnTables[tableName2].records:  
                             matchPair.append({tableName1:pk1,tableName2:pk2})
                 self.matchPair = matchPair
+                del matchPair
         else :
             self.matchPair = self.logicalMerge(compareResult,None)
     
     def checkSelect(self,selectQuery): 
+        print "Check Select"
         requestList = selectQuery['fieldNames']
         agg = selectQuery['aggFn']
         selectResult = {}
@@ -256,6 +260,7 @@ class HandleSelect:
     compareResult : Dict, bool
     '''
     def logicalMerge(self,compareResult,logic):
+        print "Logical Merge"
         if logic == None:
             if type(compareResult[0]) is list:
                 return compareResult[0]
@@ -297,6 +302,7 @@ class HandleSelect:
     '''
 
     def filterRow(self, exp1,exp2,op):
+            print "Filter Row "
             #Create a new dict to store compare results.
             #Init
             pairList = [] 
@@ -372,7 +378,7 @@ class HandleSelect:
     '''
 
     def determineExpression(self,exp):
-        
+        print "determineExpression"
         # exp is number.
         if type(exp) is int:
             return exp

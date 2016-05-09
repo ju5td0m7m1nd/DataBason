@@ -1,6 +1,7 @@
 import os
 import re
 import kivy
+import time
 kivy.require('1.9.1')
 from database import Database
 from table_schema import Table
@@ -78,21 +79,24 @@ class Display(FloatLayout):
         
         for query in query_list:
             try:
+                start_time = time.time()
                 self.table = db.processQuery(query)
+                elapsed_time = time.time() - start_time
+                print elapsed_time
                 if db.command == 'create':
                     self.sound_control('create')
                     table_title.text = self.table.tableName
                 if db.command == 'insert':
-                    self.sound_control('insert')
+                    #self.sound_control('insert')
                     table_title.text = self.table.tableName
                 if db.command == 'select':
-                    self.sound_control('select')
+                    #self.sound_control('select')
                     table_title.text = "SELECT result"
                 self.error = False
             except RuntimeError as e:
                 self.error = True
                 table_title.text = str(e)
-                self.sound_control('error')
+                #self.sound_control('error')
 
         self.data_box.add_widget(table_title)
         if not self.error:
@@ -174,6 +178,10 @@ class Display(FloatLayout):
 
         return dict_adapter
 
+    def exit_save(self):
+        db.saveAll()
+        print "alright"
+                
 
 class DatabaseApp(App):
 

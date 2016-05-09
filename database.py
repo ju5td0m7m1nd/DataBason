@@ -13,7 +13,8 @@ class Database:
     file_dir = 'files/'
     command = ''
     def __init__(self):
-        self.tables = {} 
+        self.tables = {}
+        self.toBeSaved = []
         # load all the tables from the disk (temporary implementation)
         tablePaths = glob.glob(self.file_dir + '*.pkl')
         for p in tablePaths:
@@ -37,13 +38,14 @@ class Database:
                 raise RuntimeError('Unkown table: ' + data['tableName'])
             table = self.tables[data['tableName']]
             table.Insert(data['fields'], data['values'])
-            self.saveTable(table, table.tableName)
+            self.toBeSaved.append(table)
+            #self.saveTable(table, table.tableName)
             #print 'cur table: ', table.records
             return table
         elif cmd=='select':
             self.command = 'select'
             data = parser.parse()
-            # use HandleSelect class to validate the select data     
+            # use HandleSelect class to validate the select data
             hs = HandleSelect(self,data)
             hs.executeQuery()
             #print hs.selectResult
@@ -64,6 +66,16 @@ class Database:
     def saveTable(self, obj, name):
         with open(self.file_dir + name + '.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+    def saveAll(self):
+        already_saved = []
+        while self.toBeSaved:
+            element = self.toBeSaved.pop()
+            if element.tableName not in already_saved:
+                already_saved.append(element.tableName)
+                self.saveTable(element, element.tableName)
+
+
 ## test
 if __name__ == '__main__':
     print "NO"
