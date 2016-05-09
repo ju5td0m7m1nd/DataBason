@@ -404,7 +404,7 @@ class BPlusTree(BTree):
 
 	def _get(self, key):
 		node, index = self._path_to(key)[-1]
-
+        
 		if index == len(node.contents):
 			if node.next:
 				node, index = node.next, 0
@@ -428,6 +428,89 @@ class BPlusTree(BTree):
 			index = bisect.bisect_left(node.contents, item)
 			path.append((node, index))
 		return path
+
+	def neq(self, key):
+		return self.lt(key)+self.gt(key)
+
+	def gt(self, key):
+		node, index = self._path_to(key)[-1]
+		result = []
+		if index == len(node.contents):
+			if node.next:
+				node, index = node.next, 0
+			else:
+				return result
+		while node.contents[index] == key:
+			index += 1
+			if index == len(node.contents):
+				if node.next:
+					node, index = node.next, 0
+				else:
+					break
+		while index < len(node.contents):
+			result.append(node.data[index])
+			index += 1
+		while node.next:
+			node = node.next
+			result += node.data
+		return result
+
+	def lt(self, key):
+		node_des, index = self._path_to(key)[-1]
+		result = []
+		node = self._root
+		if index == len(node_des.contents):
+			if node_des.next:
+				node_des, index = node_des.next, 0
+		while hasattr(node, "children"):
+			node = node.children[0]
+		while node != node_des:
+			result += node.data
+			node = node.next
+		i = 0
+		while i < index:
+			result.append(node.data[i])
+			i += 1
+		return result
+
+	def gteq(self, key):
+		node, index = self._path_to(key)[-1]
+		result = []
+		while index < len(node.contents):
+			result.append(node.data[index])
+			index += 1
+		while node.next:
+			node = node.next
+			result += node.data
+		return result
+
+	def lteq(self, key):
+		node_des, index = self._path_to(key)[-1]
+		result = []
+		node = self._root
+		if index == len(node_des.contents):
+			if node_des.next:
+				node_des, index = node_des.next, 0
+		while hasattr(node, "children"):
+			node = node.children[0]
+		while node != node_des:
+			result += node.data
+			node = node.next
+		i = 0
+		while i < index:
+			result.append(node.data[i])
+			i += 1
+		print 'index:'+str(index)
+		while node.contents[index] == key:
+			result.append(node.data[index])
+			index += 1
+			if index == len(node.contents):
+				if node.next:
+					node, index = node.next, 0
+				else:
+					break
+		return result
+
 
 	def get(self, key, default=None):
 		try:
@@ -581,20 +664,29 @@ class BPlusTree(BTree):
 #		self.assertEqual(
 #			list(bt.iteritems()),
 #			zip(range(2000), map(str, range(2000))))
-
+import time
+import random
 def main():
-    bt = BTree(2)
-    l = range(20, 0, -1)
-    bt.insert(8)
-    bt.insert(20)
-    bt.insert(9)
-    bt.insert(11)
-    bt.insert(15)
-    print bt
-	#for i, item in enumerate(l):
-	#	bt.insert(item)
-	#	print list(bt)
-		#assert list(bt)==l[:i + 1]
+    t = []
+    minN = -1
+    minCost = 999
+    for n in xrange(5,5000,10):
+        # bt = BPlusTree.bulkload(zip(range(10000), map(str, range(10000))), n)
+        bt = BPlusTree(n)
+        l = range(10000)
+        for item in l:
+            bt.insert(item, str(item))
+        tStart = time.time()
+        for i in xrange(1000):
+            b = bt.gt(random.randrange(10000))
+            c = bt.lt(random.randrange(10000))
+        tStop = time.time()
+        cost = tStop-tStart
+        if cost < minCost:
+            minCost = cost
+            minN = n
+        print 'order:'+str(n)+' '+str(tStop - tStart)
+    print 'cost:'+str(minCost)+' minN:'+ str(minN)
 
 if __name__ == '__main__':
 	#unittest.main()

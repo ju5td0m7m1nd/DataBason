@@ -138,23 +138,23 @@ class Parser :
 
     def createHashIndex(self):
         self.lex.eatKeyword('hashindex')
-        indexName = self.lex.eatId()
+        #indexName = self.lex.eatId()
         self.lex.eatKeyword('on')
         tableName = self.lex.eatId()
         self.lex.eatDelim('(')
         attrName = self.lex.eatId()
         self.lex.eatDelim(')')
-        return {'tableName': tableName, 'attrName': attrName, 'type': 'hash'}
+        return {'tableName': tableName, 'attr': attrName}
 
     def createTreeIndex(self):
         self.lex.eatKeyword('treeindex')
-        indexName = self.lex.eatId()
+        #indexName = self.lex.eatId()
         self.lex.eatKeyword('on')
         tableName = self.lex.eatId()
         self.lex.eatDelim('(')
         attrName = self.lex.eatId()
         self.lex.eatDelim(')')
-        return {'tableName': tableName, 'attrName': attrName, 'type': 'tree'}
+        return {'tableName': tableName, 'attr': attrName} 
 
     def createTable(self):
         self.lex.eatKeyword('table')
