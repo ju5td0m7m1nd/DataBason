@@ -79,10 +79,10 @@ class Database:
         # the key of the index dict is tableName#attrName
         if idxType == 'hash':
             self.hash_indexes[tableName+'#'+attr] = newIndex
+            self.saveIndex(self.hash_indexes)
         else:
             self.tree_indexes[tableName+'#'+attr] = newIndex
-        self.saveIndex(self.hash_indexes)
-        self.saveIndex(self.tree_indexes)
+            self.saveIndex(self.tree_indexes)
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
@@ -118,9 +118,11 @@ if __name__ == '__main__':
     db = Database()
     s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
     s2 = "insert into Item values (8, 'hi', 100)"
+    s3 = "insert into Item values (9, 'hey', 200)"
     select  = "select item.* from item"
     db.processQuery(s)
     db.processQuery(s2)
+    db.processQuery(s3)
     #1 select = "SELECT * FROM trans WHERE attr5 = 0;"
     #2 select = "SELECT COUNT(*) FROM user1, trans WHERE user1.attr1 = trans.attr2 AND user1.attr5 > 50000;"
     #3 select = "SELECT COUNT(*) FROM user1 WHERE attr3 > 100000 AND attr3 < 200000;"

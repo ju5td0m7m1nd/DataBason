@@ -31,7 +31,6 @@ class HandleSelect:
         self.checkWhere(self.query['where'])
         self.checkSelect(self.query['select'])  
         return self.selectResult
-    
     def loadTable(self,queryFrom):
         returnTables = {}
         db = self.db
@@ -78,6 +77,7 @@ class HandleSelect:
             condition.append(queryWhere['term2'])
             for c in condition:  
                 if c :
+                    '''
                     if type(c['exp1']) is int or type(c['exp2']) is int:
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
@@ -112,9 +112,10 @@ class HandleSelect:
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
-                        exp1 = self.determineExpression(c['exp1'],False)    
-                        exp2 = self.determineExpression(c['exp2'],False)  
-                        self.noneIndexSelect(exp1,exp2,c['operator']) 
+                    '''
+                    exp1 = self.determineExpression(c['exp1'],False)    
+                    exp2 = self.determineExpression(c['exp2'],False)  
+                    self.noneIndexSelect(exp1,exp2,c['operator']) 
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
@@ -236,20 +237,35 @@ class HandleSelect:
                                                 else:
                                                     selectResult[dirtyName].append(table.records[row][column]) 
                         else:
+                            if type(self.matchPair) is int:
+                                for row in self.returnTables[tableName].records:
+                                    record = self.returnTables[tableName].records[row]
+                                    for column in record:
+                                        dirtyName = tableName +'.' + column
+                                        if not dirtyName in selectResult:
+                                            selectResult[dirtyName] = [record[column]]
+                                        else:
+                                            selectResult.append(record[column])     
+                            else:
+                                for p in self.matchPair:
+                                    pk = p[tableName]
+                                    for c in self.returnTables[tableName].records[pk]:
+                                        dirtyName = tableName + '.' + c
+                                        if not dirtyName in selectResult:
+                                            selectResult[dirtyName] = [self.returnTables[tableName].records[pk][c]]
+                                        else:
+                                            value = self.returnTables[tableName].records[pk][c]
+                                            selectResult[dirtyName].append(value)
+                    else:
+                        if type(self.matchPair) is int:
+                            for row in self.returnTables[tableName].records:
+                                value = self.returnTables[tableName].records[row][columnName]
+                                result.append(value) 
+                        else:
                             for p in self.matchPair:
                                 pk = p[tableName]
-                                for c in self.returnTables[tableName].records[pk]:
-                                    dirtyName = tableName + '.' + c
-                                    if not dirtyName in selectResult:
-                                        selectResult[dirtyName] = [self.returnTables[tableName].records[pk][c]]
-                                    else:
-                                        value = self.returnTables[tableName].records[pk][c]
-                                        selectResult[dirtyName].append(value)
-                    else:
-                        for p in self.matchPair:
-                            pk = p[tableName]
-                            value = self.returnTables[tableName].records[pk][columnName]
-                            result.append(value)
+                                value = self.returnTables[tableName].records[pk][columnName]
+                                result.append(value)
                         dirtyName = tableName + '.' + columnName
                         selectResult[dirtyName] = result    
         self.selectResult = selectResult
@@ -314,9 +330,60 @@ class HandleSelect:
                 pairLengthA = len(a[0])
                 pairLengthB = len(b[0])
                 if pairLengthA == pairLengthB:
-                    for pair1 in a:
-                        if pair1 in b:
-                            resultStandard.append(pair1)
+                    # single table and operator, accelerate
+                    if len(self.returnTables) == 1:
+                        tableName = a[0].keys()[0]
+                        boundaryA = len(a)
+                        boundaryB = len(b)
+                        i = 0 
+                        j = 0
+                        while i < boundaryA and j < boundaryB:
+                            if a[i][tableName] == b[j][tableName]:
+                                resultStandard.append(a[i])
+                                i += 1
+                                j += 1
+                            elif a[i][tableName] > b[j][tableName]:
+                                j += 1
+                            elif a[i][tableName] < b[j][tableName]:
+                                i += 1
+                    else:
+                        # More than one table in returnTable but only have one table in match    
+                        if pairLengthA == 1:
+                            tableNameA = a[0].keys()[0]
+                            tableNameB = b[0].keys()[0]
+                            if tableNameA == tableNameB :
+                                boundaryA = len(a)
+                                boundaryB = len(b)
+                                i = 0 
+                                j = 0
+                                while i < boundaryA and j < boundaryB:
+                                    # SELECT * FROM A,B WHERE A.id > 1 and A.id < 100
+                                    if a[i][tableName] == b[j][tableName]:
+                                        # Choose the unselected table
+                                        for table in self.returnTables:
+                                            if table != tableNameA:
+                                                for row in self.returnTables[table].records: 
+                                                    appendPair = a[i]
+                                                    appendPair[table] = row 
+                                                    resultStandard.append(appendPair)
+                                        i += 1
+                                        j += 1
+                                    elif a[i][tableName] > b[j][tableName]:
+                                        j += 1
+                                    elif a[i][tableName] < b[j][tableName]:
+                                        i += 1
+                            else :
+                                # SELECT * FROM A,B WHERE A.id > 1 and B.id < 100
+                                for pairA in a :
+                                    for pairB in b:
+                                        for key in pairB:
+                                            appendPair = pairA
+                                            appendPair[key] = pairB[key]
+                                            resultStandard.append(appendPair)       
+                        else:        
+                            for pair1 in a:
+                                if pair1 in b:
+                                    resultStandard.append(pair1)
                 else :
                     if pairLengthA > pairLengthB:
                         for dictB in b:
@@ -334,14 +401,23 @@ class HandleSelect:
                                     resultStandard.append(dictB)
                 return resultStandard
             elif logic == 'or':
-                for cr in compareResult:
-                    if not len(resultStandard):
-                        for pair in cr:
-                            resultStandard.append(pair)
-                    else:
-                        for pair in cr:
-                            if not pair in resultStandard:
-                                resultStandard.append(pair)                   
+                a = compareResult[0]
+                b = compareResult[1]
+                pairLengthA = len(a[0])
+                pairLengthB = len(b[0])
+                if pairLengthA == pairLengthB:
+                    for cr in compareResult:
+                        if not len(resultStandard):
+                            for pair in cr:
+                                resultStandard.append(pair)
+                        else:
+                            for pair in cr:
+                                if not pair in resultStandard:
+                                    resultStandard.append(pair)                   
+                elif pairLengthA > pairLengthB:
+                    pass
+                elif pairLengthB > pairLengthA:
+                    pass
                 return resultStandard
             else :
                 raise RuntimeError ('logicalMerge : Unknown logic')
