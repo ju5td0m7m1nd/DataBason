@@ -82,7 +82,7 @@ class Display(FloatLayout):
                 start_time = time.time()
                 self.table = db.processQuery(query)
                 elapsed_time = time.time() - start_time
-                print elapsed_time
+                print (elapsed_time)
                 if db.command == 'create':
                #     self.sound_control('create')
                     table_title.text = self.table.tableName
@@ -180,7 +180,7 @@ class Display(FloatLayout):
 
     def exit_save(self):
         db.saveAll()
-        print "alright"
+        print ("alright")
                 
 
 class DatabaseApp(App):

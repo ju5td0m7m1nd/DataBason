@@ -64,7 +64,6 @@ class Aggregation:
                         except TypeError:
                             continue
                             print "Unsupported sum error near SUM()"
-
         returnCol = 'SUM('+column_name+')'
         to_return = {returnCol: [self.to_sum]}
         return [self.to_sum]

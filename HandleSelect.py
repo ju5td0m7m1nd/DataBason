@@ -84,7 +84,7 @@ class HandleSelect:
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
-                            self.compareResult(self.chooseIndex(exp1))
+                            self.compareResult.append(self.chooseIndex(exp1))
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             operator = c['operator']
@@ -93,7 +93,7 @@ class HandleSelect:
                             elif operator == '<':
                                 operator = '>'
                             exp2['operator'] = operator 
-                            self.compareResult(self.chooseIndex(exp2))
+                            self.compareResult.append(self.chooseIndex(exp2))
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
 
@@ -164,7 +164,7 @@ class HandleSelect:
                 self.compareResult.append(self.filterRow(exp1,exp2,op))
 
     def checkSelect(self,selectQuery): 
-        print "Check Select"
+        #print "Check Select"
         requestList = selectQuery['fieldNames']
         agg = selectQuery['aggFn']
         selectResult = {}
@@ -286,6 +286,7 @@ class HandleSelect:
     Logic : AND OR None
     compareResult : Dict, bool
     '''
+    #@profile
     def logicalMerge(self,compareResult,logic):
         print ("Logical Merge")
         if logic == None:
@@ -297,7 +298,7 @@ class HandleSelect:
             resultStandard = []
             if logic == 'and':
                 for cr in compareResult:
-                    print len(cr)
+                    #print len(cr)
                     if not len(cr):
                         return []
                     #if not len(resultStandard):
