@@ -313,9 +313,60 @@ class HandleSelect:
                 pairLengthA = len(a[0])
                 pairLengthB = len(b[0])
                 if pairLengthA == pairLengthB:
-                    for pair1 in a:
-                        if pair1 in b:
-                            resultStandard.append(pair1)
+                    # single table and operator, accelerate
+                    if len(self.returnTables) == 1:
+                        tableName = a[0].keys()[0]
+                        boundaryA = len(a)
+                        boundaryB = len(b)
+                        i = 0 
+                        j = 0
+                        while i < boundaryA and j < boundaryB:
+                            if a[i][tableName] == b[j][tableName]:
+                                resultStandard.append(a[i])
+                                i += 1
+                                j += 1
+                            elif a[i][tableName] > b[j][tableName]:
+                                j += 1
+                            elif a[i][tableName] < b[j][tableName]:
+                                i += 1
+                    else:
+                        # More than one table in returnTable but only have one table in match    
+                        if pairLengthA == 1:
+                            tableNameA = a[0].keys()[0]
+                            tableNameB = b[0].keys()[0]
+                            if tableNameA == tableNameB :
+                                boundaryA = len(a)
+                                boundaryB = len(b)
+                                i = 0 
+                                j = 0
+                                while i < boundaryA and j < boundaryB:
+                                    # SELECT * FROM A,B WHERE A.id > 1 and A.id < 100
+                                    if a[i][tableName] == b[j][tableName]:
+                                        # Choose the unselected table
+                                        for table in self.returnTables:
+                                            if table != tableNameA:
+                                                for row in self.returnTables[table].records: 
+                                                    appendPair = a[i]
+                                                    appendPair[table] = row 
+                                                    resultStandard.append(appendPair)
+                                        i += 1
+                                        j += 1
+                                    elif a[i][tableName] > b[j][tableName]:
+                                        j += 1
+                                    elif a[i][tableName] < b[j][tableName]:
+                                        i += 1
+                            else :
+                                # SELECT * FROM A,B WHERE A.id > 1 and B.id < 100
+                                for pairA in a :
+                                    for pairB in b:
+                                        for key in pairB:
+                                            appendPair = pairA
+                                            appendPair[key] = pairB[key]
+                                            resultStandard.append(appendPair)       
+                        else:        
+                            for pair1 in a:
+                                if pair1 in b:
+                                    resultStandard.append(pair1)
                 else :
                     if pairLengthA > pairLengthB:
                         for dictB in b:
@@ -333,14 +384,23 @@ class HandleSelect:
                                     resultStandard.append(dictB)
                 return resultStandard
             elif logic == 'or':
-                for cr in compareResult:
-                    if not len(resultStandard):
-                        for pair in cr:
-                            resultStandard.append(pair)
-                    else:
-                        for pair in cr:
-                            if not pair in resultStandard:
-                                resultStandard.append(pair)                   
+                a = compareResult[0]
+                b = compareResult[1]
+                pairLengthA = len(a[0])
+                pairLengthB = len(b[0])
+                if pairLengthA == pairLengthB:
+                    for cr in compareResult:
+                        if not len(resultStandard):
+                            for pair in cr:
+                                resultStandard.append(pair)
+                        else:
+                            for pair in cr:
+                                if not pair in resultStandard:
+                                    resultStandard.append(pair)                   
+                elif pairLengthA > pairLengthB:
+                    pass
+                elif pairLengthB > pairLengthA:
+                    pass
                 return resultStandard
             else :
                 raise RuntimeError ('logicalMerge : Unknown logic')
