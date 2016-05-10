@@ -1,9 +1,10 @@
 import glob
 import pickle
 import re
-from sqlparser import Parser
-from table_schema import Table
+from parser import Parser
+from table_schema import *
 from HandleSelect import *
+from btree import *
 
 class Database:
     '''
@@ -15,6 +16,8 @@ class Database:
     def __init__(self):
         self.tables = {}
         self.toBeSaved = []
+        self.tree_indexes = {}
+        self.hash_indexes = {}
         # load all the tables from the disk (temporary implementation)
         tablePaths = glob.glob(self.file_dir + '*.pkl')
         for p in tablePaths:
@@ -25,12 +28,23 @@ class Database:
         parser = Parser(s)
         cmd = re.split('\s+',s.strip(),1)[0].lower()
         if cmd=='create':
-            self.command = 'create'
-            data = parser.parse()
-            table = Table(data['tableName'], data['primaryKey'], data['fields'])
-            self.addTable(table)
-            #print 'created table: ', data
-            return table
+            cmdType = re.split('\s+', s.strip(),2)[1].lower()
+            self.command = cmd + ' ' + cmdType
+            if cmdType=='table':
+                data = parser.parse()
+                table = Table(data['tableName'], data['primaryKey'], data['fields'])
+                self.addTable(table)
+                #print 'created table: ', data
+                return table
+            elif cmdType=='treeindex':
+                data = parser.parse()
+                index = self.tables[data['tableName']].treeIndex(data['attr'])
+                self.addIndex(data['tableName'], data['attr'], index, 'tree')
+            elif cmdType=='hashindex':
+                data = parser.parse()
+                index = self.tables[data['tableName']].hashIndex(data['attr'])
+                self.addIndex(data['tableName'], data['attr'], index, 'hash')
+
         elif cmd=='insert':
             self.command = 'insert'
             data = parser.parse()
@@ -52,6 +66,14 @@ class Database:
             return hs.selectResult
         else:
             raise RuntimeError('Unkown keyword: ' + cmd)
+    
+    def addIndex(self, tableName, attr ,newIndex, idxType):
+        # the key of the index dict is tableName#attrName
+        if idxType == 'hash':
+            self.hash_indexes[tableName+'#'+attr] = newIndex
+        else:
+            self.tree_indexes[tableName+'#'+attr] = newIndex
+        # add save index
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
@@ -68,21 +90,28 @@ class Database:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
     def saveAll(self):
-        already_saved = []
         while self.toBeSaved:
             element = self.toBeSaved.pop()
             if element.tableName not in already_saved:
                 already_saved.append(element.tableName)
                 self.saveTable(element, element.tableName)
 
-
 ## test
 if __name__ == '__main__':
     print "NO"
     db = Database()
-    #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
-    #s2 = "insert into Item values (8, 'hi', 100)"
-    #db.processQuery(s)
-    #db.processQuery(s2)
-    select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
-    db.processQuery(select)
+    s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
+    s1 = "create treeindex on Item(des)"
+    s2 = "insert into Item values (8, 'a', 100)"
+    s3 = "insert into Item values (9, 'b', 200)"
+    s4 = "insert into Item values (10, 'c', 300)"
+    s5 = "insert into Item values (11, 'd', 400)"
+    db.processQuery(s)
+    db.processQuery(s2)
+    db.processQuery(s3)
+    db.processQuery(s4)
+    db.processQuery(s5)
+    db.processQuery(s1)
+    print db.tree_indexes
+    #select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
+    # db.processQuery(select)

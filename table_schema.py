@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from HandleSelect import *
+from btree import *
 class Table :
     '''
         After parsing the SQL string, use this class to create a table structure in memory.
@@ -19,6 +20,17 @@ class Table :
         self.primaryKey = primaryKey
         self.attributeList = attributeList
         self.records = {}
+
+    def treeIndex(self, attr, order=125):
+        bt = BPlusTree(order)
+        for v in self.records.values():
+            bt.insert(v[attr], v)
+        print bt
+        return bt
+
+    def hashIndex(self, attr):
+        
+        return {}
 
     def Insert(self,Field,Value):
         newRecord = {} 
