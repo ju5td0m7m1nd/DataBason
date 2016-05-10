@@ -80,7 +80,7 @@ class Database:
             self.hash_indexes[tableName+'#'+attr] = newIndex
         else:
             self.tree_indexes[tableName+'#'+attr] = newIndex
-        # add save index
+        saveIndex()
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
@@ -103,7 +103,6 @@ class Database:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
     def saveAll(self):
-        saveIndex()
         already_saved = []
         while self.toBeSaved:
             element = self.toBeSaved.pop()
