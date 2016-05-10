@@ -17,7 +17,7 @@ class Aggregation:
         '''
         # count number of column_name: COUNT(column_name)
         if column_name == '*':
-            if type(match_pair) :
+            if type(match_pair) is int :
                 self.counted = len(returnTable.records)
             else:
                 self.counted = len(match_pair)
