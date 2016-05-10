@@ -52,6 +52,21 @@ class HandleSelect:
                 raise RuntimeError ("LoadTable : Select from table which doesn't exist") 
         self.returnTables = returnTables 
     
+    def chooseIndex(self, indexQuery):
+        op = indexQuery['operator']
+        idxName = indexQuery['tableName']+'#'+indexQuery['attrName']
+        c = indexQuery['constant']
+        if op == '=':
+            pairList = self.db.hash_indexes[idxName][c]
+        elif op == '<':
+            pairList = self.db.tree_indexes[idxName].lt(c)
+        elif op == '>':
+            pairList = self.db.tree_indexes[idxName].gt(c)
+        else:
+            pairList = self.db.tree_indexes[idxName].neq(c)
+        print pairList
+        return pairList
+
     def checkWhere(self,queryWhere):
         print "CHECKWHERE"
         self.compareResult = []
@@ -65,10 +80,11 @@ class HandleSelect:
                     if type(c['exp1']) is int or type(c['exp2']) is int:
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
+                        indexQuery = {}
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
-                            print exp1
+                            self.chooseIndex(exp1)
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             operator = c['operator']
@@ -77,25 +93,27 @@ class HandleSelect:
                             elif operator == '<':
                                 operator = '>'
                             exp2['operator'] = operator 
-                            print exp2
+                            self.chooseIndex(exp2)
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
-                        
+
                     elif '\"' in c['exp1'] or '\"' in c['exp2'] :
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
+                            self.chooseIndex(exp1)
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             exp2['operator'] = c['operator']
+                            self.chooseIndex(exp2)
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
                         exp1 = self.determineExpression(c['exp1'],False)    
                         exp2 = self.determineExpression(c['exp2'],False)  
-                        self.noneIndexSelect(exp1,exp2,c['operator'])    
+                        self.noneIndexSelect(exp1,exp2,c['operator'])
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge

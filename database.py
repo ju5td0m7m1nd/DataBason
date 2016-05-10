@@ -11,7 +11,7 @@ class Database:
         tables -- a dictionary. key:tableName, value:a Table
         
     '''
-    file_dir = 'files/'
+    dirs = ['files/','tree_indexes/', 'hash_indexes']
     command = ''
     def __init__(self):
         self.tables = {}
@@ -19,10 +19,17 @@ class Database:
         self.hash_indexes = {}
         self.toBeSaved = []
         # load all the tables from the disk (temporary implementation)
-        tablePaths = glob.glob(self.file_dir + '*.pkl')
-        for p in tablePaths:
-            table = self.loadTable(p)
-            self.tables[table.tableName] = table
+        for d in self.dirs:
+            paths = glob.glob(d + '*.pkl')
+            for p in paths:
+                obj = self.loadTable(p)
+                if d == 'files/':
+                    self.tables[obj.tableName] = obj
+                elif d == 'tree_indexes/':
+                    self.tree_indexes = obj
+                elif d == 'hash_indexes/':
+                    self.hash_indexes = obj
+
 
     def processQuery(self, s):
         parser = Parser(s)
@@ -86,10 +93,17 @@ class Database:
             return pickle.load(f)
     
     def saveTable(self, obj, name):
-        with open(self.file_dir + name + '.pkl', 'wb') as f:
+        with open('files/' + name + '.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+    def saveIndex(self, obj):
+        with open('tree_indexes/tree_indexes.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+        with open('hash_indexes/hash_indexes.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
     def saveAll(self):
+        saveIndex()
         already_saved = []
         while self.toBeSaved:
             element = self.toBeSaved.pop()
@@ -105,11 +119,12 @@ if __name__ == '__main__':
     
     s2 = "insert into Item values (8, 'a', 100)"
     s3 = "insert into Item values (9, 'b', 200)"
-    s4 = "insert into Item values (10, 'c', 300)"
+    s4 = "insert into Item values (10, 'c', 200)"
     s5 = "insert into Item values (11, 'd', 400)"
     
-    s6 = "create hashindex on Item(des)"
-    s7 = "create treeindex on Item(des)"
+    s6 = "create hashindex on Item(a_field)"
+    s7 = "create treeindex on Item(a_field)"
+    s8 = 'select * from Item where a_field = 200'
 
     db.processQuery(s)
     db.processQuery(s2)
@@ -118,7 +133,8 @@ if __name__ == '__main__':
     db.processQuery(s5)
     db.processQuery(s6)
     db.processQuery(s7)
-    print db.hash_indexes
-    print db.tree_indexes['item#des'].values()
+    db.processQuery(s8)
+    #print db.hash_indexes
+    #print db.tree_indexes['item#des'].values()
     #select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
     # db.processQuery(select)
