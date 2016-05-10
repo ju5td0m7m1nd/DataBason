@@ -99,20 +99,26 @@ class Database:
 
 ## test
 if __name__ == '__main__':
-    print "NO"
+    print "info from __main__ of database.py"
     db = Database()
     s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
-    s1 = "create treeindex on Item(des)"
+    
     s2 = "insert into Item values (8, 'a', 100)"
     s3 = "insert into Item values (9, 'b', 200)"
     s4 = "insert into Item values (10, 'c', 300)"
     s5 = "insert into Item values (11, 'd', 400)"
+    
+    s6 = "create hashindex on Item(des)"
+    s7 = "create treeindex on Item(des)"
+
     db.processQuery(s)
     db.processQuery(s2)
     db.processQuery(s3)
     db.processQuery(s4)
     db.processQuery(s5)
-    db.processQuery(s1)
-    print db.tree_indexes
+    db.processQuery(s6)
+    db.processQuery(s7)
+    print db.hash_indexes
+    print db.tree_indexes['item#des'].values()
     #select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
     # db.processQuery(select)
