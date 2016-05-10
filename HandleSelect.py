@@ -258,7 +258,7 @@ class HandleSelect:
                         if type(self.matchPair) is int:
                             for row in self.returnTables[tableName].records:
                                 value = self.returnTables[tableName].records[row][columnName]
-                                result.append(valueName) 
+                                result.append(value) 
                         else:
                             for p in self.matchPair:
                                 pk = p[tableName]
