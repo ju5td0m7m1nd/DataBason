@@ -325,7 +325,6 @@ class HandleSelect:
             #Init
             pairList = []
             if type(exp2) is list:
-                '''
                 # use sorted list to accelerate equality join
                 if op == '=':
                     exp1_sorted = sorted(exp1, key = lambda x : x['value']) 
@@ -344,17 +343,23 @@ class HandleSelect:
                             while exp1_sorted[i+lookaheadI]['value'] == record2['value']:
                                 if i+lookaheadI+1 < len(exp1_sorted):
                                     lookaheadI += 1
+                                elif i+lookaheadI+1 == len(exp1_sorted):
+                                    lookaheadI += 1
+                                    break
                                 else :
                                     break
                             while exp2_sorted[j+lookaheadJ]['value'] == record1['value']:
                                 if j+lookaheadJ+1 < len(exp2_sorted):
                                     lookaheadJ += 1
+                                elif j+lookaheadJ+1 == len(exp2_sorted):
+                                    lookaheadJ += 1
+                                    break
                                 else :
                                     break
-                            for ptrI in range(0, lookaheadI+1):
-                                for ptrJ in range(0, lookaheadJ+1):
-                                    recordI = exp1_sorted[i+lookaheadI]
-                                    recordJ = exp2_sorted[j+lookaheadJ]
+                            for ptrI in range(0, lookaheadI):
+                                for ptrJ in range(0, lookaheadJ):
+                                    recordI = exp1_sorted[i+ptrI]
+                                    recordJ = exp2_sorted[j+ptrJ]
                                     pairList.append({recordI['tableName']: recordI['pk'],recordJ['tableName']:recordJ['pk']})  
                             i = i+lookaheadI
                             j = j+lookaheadJ 
@@ -363,32 +368,31 @@ class HandleSelect:
                         elif record1['value'] < record2['value']:
                             i += 1  
                 else :
-                '''
-                for dict1 in exp1 :
-                    value1 = dict1['value']
-                    for dict2 in exp2:
-                        flag = False
-                        value2 = dict2['value']
-                        if type(value1) != type(value2):
-                            raise RuntimeError("different types and cannot be compared.")
-                        if op == ">":
-                            if value1 > value2:
-                                flag = True 
-                        elif op == "=":
-                            if value1 == value2:
-                                flag = True
-                        elif op == "<":
-                            if value1 < value2:
-                                flag = True 
-                        elif op == "<>" :
-                            if value1 != value2:
-                                flag = True
-                        else :
-                            raise RuntimeError("FilterRow : Invalid operation " +op+" ")
-                        if flag :
-                            tableName_exp1 = dict1['tableName']
-                            tableName_exp2 = dict2['tableName']
-                            pairList.append({tableName_exp1:dict1['pk'],tableName_exp2:dict2['pk']})
+                    for dict1 in exp1 :
+                        value1 = dict1['value']
+                        for dict2 in exp2:
+                            flag = False
+                            value2 = dict2['value']
+                            if type(value1) != type(value2):
+                                raise RuntimeError("different types and cannot be compared.")
+                            if op == ">":
+                                if value1 > value2:
+                                    flag = True 
+                            elif op == "=":
+                                if value1 == value2:
+                                    flag = True
+                            elif op == "<":
+                                if value1 < value2:
+                                    flag = True 
+                            elif op == "<>" :
+                                if value1 != value2:
+                                    flag = True
+                            else :
+                                raise RuntimeError("FilterRow : Invalid operation " +op+" ")
+                            if flag :
+                                tableName_exp1 = dict1['tableName']
+                                tableName_exp2 = dict2['tableName']
+                                pairList.append({tableName_exp1:dict1['pk'],tableName_exp2:dict2['pk']})
             else:
                 for dict1 in exp1 :
                     flag = False
