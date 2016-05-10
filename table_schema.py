@@ -25,7 +25,7 @@ class Table :
         bt = BPlusTree(order)
         for v in self.records.values():
             bt.insert(v[attr], v)
-        print bt
+        print (bt)
         return bt
 
     def hashIndex(self, attr):

@@ -350,7 +350,7 @@ class BTree(object):
 
 		return tree
 
-	def _build_bulkloaded_leaves(self, items):
+	'''def _build_bulkloaded_leaves(self, items):
 		minimum = self.order // 2
 		leaves, seps = [[]], []
 
@@ -398,7 +398,7 @@ class BTree(object):
 			levels.append(nodes)
 
 		self._root = self.BRANCH(self, contents=seps, children=levels[-1])
-
+'''
 class BPlusTree(BTree):
 	LEAF = _BPlusLeaf
 
@@ -500,7 +500,7 @@ class BPlusTree(BTree):
 		while i < index:
 			result.append(node.data[i])
 			i += 1
-		print 'index:'+str(index)
+		print ('index:'+str(index))
 		while node.contents[index] == key:
 			result.append(node.data[index])
 			index += 1
@@ -666,28 +666,55 @@ class BPlusTree(BTree):
 #			zip(range(2000), map(str, range(2000))))
 import time
 import random
-def main():
-    t = []
-    minN = -1
-    minCost = 999
-    for n in xrange(5,5000,10):
-        # bt = BPlusTree.bulkload(zip(range(10000), map(str, range(10000))), n)
-        bt = BPlusTree(n)
-        l = range(10000)
-        for item in l:
-            bt.insert(item, str(item))
-        tStart = time.time()
-        for i in xrange(1000):
-            b = bt.gt(random.randrange(10000))
-            c = bt.lt(random.randrange(10000))
-        tStop = time.time()
-        cost = tStop-tStart
-        if cost < minCost:
-            minCost = cost
-            minN = n
-        print 'order:'+str(n)+' '+str(tStop - tStart)
-    print 'cost:'+str(minCost)+' minN:'+ str(minN)
+def hash_test():
+	l = range(10000) #[random.randrange(10000) for i in xrange(10000)]
+	accessList = [random.randrange(10000) for i in xrange(1000)]
+	bt = BPlusTree(115)
+	h = {}
+	
+	for item in l:
+		bt.insert(item, str(item))
+		if item in h:
+			h[item].append(str(item))
+		else:
+			h[item] = []
+			h[item].append(str(item))
+
+
+	t = time.time()
+	for i in accessList:
+		a = h[i]
+	print ('hash acces:'+str(time.time() - t))
+
+	t = time.time()
+	for i in accessList:
+		a = bt.get(i)
+	print ('tree acces:'+str(time.time() - t))
+
+def tree_test():
+	t = []
+	minN = -1
+	minCost = 999
+	accessList = [random.randrange(10000) for i in xrange(1000)]
+	for n in xrange(5,5000,10):
+		# bt = BPlusTree.bulkload(zip(range(10000), map(str, range(10000))), n)
+		bt = BPlusTree(n)
+		l = range(10000)
+		for item in l:
+			bt.insert(item, str(item))
+		tStart = time.time()
+		for i in accessList:
+			b = bt.gt(i)
+			c = bt.lt(i)
+		tStop = time.time()
+		cost = tStop-tStart
+		if cost < minCost:
+			minCost = cost
+			minN = n
+		print ('order:'+str(n)+' '+str(tStop - tStart))
+	print ('cost:'+str(minCost)+' minN:'+ str(minN))
 
 if __name__ == '__main__':
 	#unittest.main()
-	main()
+	#tree_test()
+	hash_test()

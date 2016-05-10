@@ -8,6 +8,7 @@ from table_schema import Table
 def runQuery(db):
     que = raw_input("$MASEEKO (type exit to leave)-> ")
     if que == 'exit':
+        db.saveAll()
         sys.exit('bye')
     # parse query list.
     query_list = re.split(';', que.strip())
