@@ -223,7 +223,15 @@ class HandleSelect:
                                                 selectResult[dirtyName].append(value)
                             elif type(self.matchPair) is int:
                                 if len(self.returnTables) > 1 :
-                                    pass
+                                    '''
+                                    tableNameList = []
+                                    for t in self.returnTables:
+                                        tableNameList.append(t)
+                                    recordsA = self.returnTables[tableNameList[0]].records                            
+                                    recordsB = self.returnTables[tableNameList[1]].records                    
+                                    for pairA in recordsA :
+                                    '''
+                                    pass 
                                 elif len(self.returnTables) == 1:
                                     for tableName in self.returnTables:
                                         table = self.returnTables[tableName]
@@ -413,9 +421,25 @@ class HandleSelect:
                                 if not pair in resultStandard:
                                     resultStandard.append(pair)                   
                 elif pairLengthA > pairLengthB:
-                    pass
+                    tableNameA = a[0].keys()[0]
+                    for pairA in a:
+                        resultStandard.append(pairA)
+                    for pairB in b:
+                        for row in self.returnTables[tableNameA]:
+                            appendPair = pairB
+                            appendPair[tableNameA] = row
+                            if not appendPair in resultStandard:
+                                resultStandard.append(appendPair)
                 elif pairLengthB > pairLengthA:
-                    pass
+                    tableNameB = b[0].keys()[0]
+                    for pairB in b:
+                        resultStandard.append(pairB)
+                    for pairA in a:
+                        for row in self.returnTables[tableNameB]:
+                            appendPair = pairA
+                            appendPair[tableNameB] = row
+                            if not appendPair in resultStandard:
+                                resultStandard.append(appendPair)
                 return resultStandard
             else :
                 raise RuntimeError ('logicalMerge : Unknown logic')
