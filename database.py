@@ -1,8 +1,9 @@
+import time
 import glob
 import pickle
 import re
 from sqlparser import Parser
-from table_schema import Table
+from table_schema import *
 from HandleSelect import *
 
 class Database:
@@ -78,11 +79,18 @@ class Database:
 
 ## test
 if __name__ == '__main__':
-    print "NO"
+    #print "NO"
     db = Database()
     #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
     #s2 = "insert into Item values (8, 'hi', 100)"
     #db.processQuery(s)
     #db.processQuery(s2)
-    select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
+    #1 select = "SELECT * FROM trans WHERE attr5 = 0;"
+    #2 select = "SELECT COUNT(*) FROM user1, trans WHERE user1.attr1 = trans.attr2 AND user1.attr5 > 50000;"
+    #3 select = "SELECT COUNT(*) FROM user1 WHERE attr3 > 100000 AND attr3 < 200000;"
+    #4 select = "SELECT COUNT(*) FROM trans;"
+    select = "SELECT SUM(attr4) FROM user1 WHERE attr3 = 1510503 OR attr5 > 500000;"
+    t = time.time()
     db.processQuery(select)
+    end = time.time() - t
+    print(end)

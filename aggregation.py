@@ -43,7 +43,7 @@ class Aggregation:
                         self.to_sum += returnTable[query_from].records[k][column_name]
                     except TypeError:
                         continue
-                        print "Unsupported sum error near SUM()"
+                        print ("Unsupported sum error near SUM()")
 
         returnCol = 'SUM('+column_name+')'
         to_return = {returnCol: [self.to_sum]}

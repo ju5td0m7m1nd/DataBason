@@ -53,7 +53,7 @@ class HandleSelect:
         self.returnTables = returnTables 
     
     def checkWhere(self,queryWhere):
-        print "CHECKWHERE"
+        #print "CHECKWHERE"
         compareResult = []
         if len(queryWhere):  
             condition = []
@@ -131,7 +131,7 @@ class HandleSelect:
             self.matchPair = self.logicalMerge(compareResult,None)
     
     def checkSelect(self,selectQuery): 
-        print "Check Select"
+        #print "Check Select"
         requestList = selectQuery['fieldNames']
         agg = selectQuery['aggFn']
         selectResult = {}
@@ -258,8 +258,9 @@ class HandleSelect:
     Logic : AND OR None
     compareResult : Dict, bool
     '''
+    #@profile
     def logicalMerge(self,compareResult,logic):
-        print "Logical Merge"
+        #print "Logical Merge"
         if logic == None:
             if type(compareResult[0]) is list:
                 return compareResult[0]
@@ -269,7 +270,7 @@ class HandleSelect:
             resultStandard = []
             if logic == 'and':
                 for cr in compareResult:
-                    print len(cr)
+                    #print len(cr)
                     if not len(cr):
                         return []
                     #if not len(resultStandard):
@@ -320,7 +321,7 @@ class HandleSelect:
     Return a filtered dict
     '''
     def filterRow(self, exp1,exp2,op):
-            print "Filter Row "
+            #print "Filter Row "
             #Create a new dict to store compare results.
             #Init
             pairList = []
@@ -437,7 +438,7 @@ class HandleSelect:
     '''
 
     def determineExpression(self,exp):
-        print "determineExpression"
+        #print "determineExpression"
         # exp is number.
         if type(exp) is int:
             return exp
