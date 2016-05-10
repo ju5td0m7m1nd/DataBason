@@ -56,8 +56,10 @@ class HandleSelect:
         op = indexQuery['operator']
         idxName = indexQuery['tableName']+'#'+indexQuery['attrName']
         c = indexQuery['constant']
+        pairList = []
         if op == '=':
-            pairList = self.db.hash_indexes[idxName][c]
+            if c in self.db.hash_indexes[idxName]:
+                pairList = self.db.hash_indexes[idxName][c]
         elif op == '<':
             pairList = self.db.tree_indexes[idxName].lt(c)
         elif op == '>':
