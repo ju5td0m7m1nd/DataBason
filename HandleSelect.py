@@ -31,7 +31,6 @@ class HandleSelect:
         self.checkWhere(self.query['where'])
         self.checkSelect(self.query['select'])  
         return self.selectResult
-    
     def loadTable(self,queryFrom):
         returnTables = {}
         db = self.db
@@ -76,6 +75,7 @@ class HandleSelect:
             condition.append(queryWhere['term2'])
             for c in condition:  
                 if c :
+                    '''
                     if type(c['exp1']) is int or type(c['exp2']) is int:
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
@@ -110,9 +110,10 @@ class HandleSelect:
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
-                        exp1 = self.determineExpression(c['exp1'],False)    
-                        exp2 = self.determineExpression(c['exp2'],False)  
-                        self.noneIndexSelect(exp1,exp2,c['operator']) 
+                    '''
+                    exp1 = self.determineExpression(c['exp1'],False)    
+                    exp2 = self.determineExpression(c['exp2'],False)  
+                    self.noneIndexSelect(exp1,exp2,c['operator']) 
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge

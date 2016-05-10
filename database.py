@@ -79,10 +79,10 @@ class Database:
         # the key of the index dict is tableName#attrName
         if idxType == 'hash':
             self.hash_indexes[tableName+'#'+attr] = newIndex
+            self.saveIndex(self.hash_indexes)
         else:
             self.tree_indexes[tableName+'#'+attr] = newIndex
-        self.saveIndex(self.hash_indexes)
-        self.saveIndex(self.tree_indexes)
+            self.saveIndex(self.tree_indexes)
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
