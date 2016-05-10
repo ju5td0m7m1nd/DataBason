@@ -18,7 +18,7 @@ class Aggregation:
         # count number of column_name: COUNT(column_name)
         if column_name == '*':
             if type(match_pair) is int :
-                if tableName == '*':
+                if table_name == '*':
                     tableLength = []
                     for table in returnTable:
                         tableLength.append(len(returnTable[table].records))
