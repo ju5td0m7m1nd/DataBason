@@ -73,7 +73,7 @@ class HandleSelect:
                         exp2 = exp1
                         exp1 = temp                    
                     
-                    # Due to previous swap, if exp1 not dict, and both of them is not dict
+                    # Due to previous swap, if exp1 not list, and both of them is not list 
                     if not type(exp1) is list:
                         #Directly do logical operation
                         RESULT = False
@@ -262,7 +262,6 @@ class HandleSelect:
         print "Logical Merge"
         if logic == None:
             if type(compareResult[0]) is list:
-                print compareResult[0]
                 return compareResult[0]
             else:
                 raise RuntimeError ('logicalMerge : Merge with unknown type')
@@ -270,6 +269,7 @@ class HandleSelect:
             resultStandard = []
             if logic == 'and':
                 for cr in compareResult:
+                    print len(cr)
                     if not len(cr):
                         return []
                     #if not len(resultStandard):
@@ -279,10 +279,29 @@ class HandleSelect:
                     #    for r in resultStandard:
                     #        if not r in cr:
                     #            resultStandard.remove(r)
-                for pair1 in compareResult[0]:
-                    for pair2 in compareResult[1]:
-                        if pair1 == pair2 :
+                a = compareResult[0]
+                b = compareResult[1]
+                pairLengthA = len(a[0])
+                pairLengthB = len(b[0])
+                if pairLengthA == pairLengthB:
+                    for pair1 in a:
+                        if pair1 in b:
                             resultStandard.append(pair1)
+                else :
+                    if pairLengthA > pairLengthB:
+                        for dictB in b:
+                            key = dictB.keys()[0]
+                            value = dictB.values()[0]
+                            for dictA in a:
+                                if dictA[key] == value :
+                                    resultStandard.append(dictA) 
+                    else :
+                        for dictA in a:
+                            key = dictA.keys()[0]
+                            value = dictA.values()[0]
+                            for dictB in b:
+                                if dictB[key] == value:
+                                    resultStandard.append(dictB)
                 return resultStandard
             elif logic == 'or':
                 for cr in compareResult:
@@ -306,6 +325,7 @@ class HandleSelect:
             #Init
             pairList = []
             if type(exp2) is list:
+                '''
                 # use sorted list to accelerate equality join
                 if op == '=':
                     exp1_sorted = sorted(exp1, key = lambda x : x['value']) 
@@ -316,36 +336,59 @@ class HandleSelect:
                         record1 = exp1_sorted[i]
                         record2 = exp2_sorted[j]
                         if record1['value'] == record2['value'] :
-                            pairList.append({record1['tableName'] : record1['pk'],record2['tableName']:record2['pk']})
-                            i += 1
-                            j += 1
+                            #pairList.append({record1['tableName'] : record1['pk'],record2['tableName']:record2['pk']})
+                            # Use lookahead to check which list should go forward
+                            # boundary examination
+                            lookaheadI = 0
+                            lookaheadJ = 0
+                            while exp1_sorted[i+lookaheadI]['value'] == record2['value']:
+                                if i+lookaheadI+1 < len(exp1_sorted):
+                                    lookaheadI += 1
+                                else :
+                                    break
+                            while exp2_sorted[j+lookaheadJ]['value'] == record1['value']:
+                                if j+lookaheadJ+1 < len(exp2_sorted):
+                                    lookaheadJ += 1
+                                else :
+                                    break
+                            for ptrI in range(0, lookaheadI+1):
+                                for ptrJ in range(0, lookaheadJ+1):
+                                    recordI = exp1_sorted[i+lookaheadI]
+                                    recordJ = exp2_sorted[j+lookaheadJ]
+                                    pairList.append({recordI['tableName']: recordI['pk'],recordJ['tableName']:recordJ['pk']})  
+                            i = i+lookaheadI
+                            j = j+lookaheadJ 
                         elif record1['value'] > record2['value']:
                             j += 1
                         elif record1['value'] < record2['value']:
                             i += 1  
-                else : 
-                    for dict1 in exp1 :
-                        value1 = dict1['value']
-                        for dict2 in exp2:
-                            flag = False
-                            value2 = dict2['value']
-                            if type(value1) != type(value2):
-                                raise RuntimeError("different types and cannot be compared.")
-                            if op == ">":
-                                if value1 > value2:
-                                    flag = True 
-                            elif op == "<":
-                                if value1 < value2:
-                                    flag = True 
-                            elif op == "<>" :
-                                if value1 != value2:
-                                    flag = True
-                            else :
-                                raise RuntimeError("FilterRow : Invalid operation " +op+" ")
-                            if flag :
-                                tableName_exp1 = dict1['tableName']
-                                tableName_exp2 = dict2['tableName']
-                                pairList.append({tableName_exp1:dict1['pk'],tableName_exp2:dict2['pk']})
+                else :
+                '''
+                for dict1 in exp1 :
+                    value1 = dict1['value']
+                    for dict2 in exp2:
+                        flag = False
+                        value2 = dict2['value']
+                        if type(value1) != type(value2):
+                            raise RuntimeError("different types and cannot be compared.")
+                        if op == ">":
+                            if value1 > value2:
+                                flag = True 
+                        elif op == "=":
+                            if value1 == value2:
+                                flag = True
+                        elif op == "<":
+                            if value1 < value2:
+                                flag = True 
+                        elif op == "<>" :
+                            if value1 != value2:
+                                flag = True
+                        else :
+                            raise RuntimeError("FilterRow : Invalid operation " +op+" ")
+                        if flag :
+                            tableName_exp1 = dict1['tableName']
+                            tableName_exp2 = dict2['tableName']
+                            pairList.append({tableName_exp1:dict1['pk'],tableName_exp2:dict2['pk']})
             else:
                 for dict1 in exp1 :
                     flag = False
@@ -368,13 +411,13 @@ class HandleSelect:
                     if flag:
                         tableName = dict1['tableName']
                         #Need to join table.
-                        if len(self.returnTables) > 1:
-                            for t in self.returnTables:
-                                if not t == tableName:
-                                    for recordsKey in self.returnTables[t].records:   
-                                        pairList.append({tableName:dict1['pk'],t:recordsKey})
-                        else :
-                            pairList.append({tableName:dict1['pk']})         
+                        #if len(self.returnTables) > 1:
+                        #    for t in self.returnTables:
+                        #        if not t == tableName:
+                        #            for recordsKey in self.returnTables[t].records:   
+                        #                pairList.append({tableName:dict1['pk'],t:recordsKey})
+                        #else :
+                        pairList.append({tableName:dict1['pk']})         
             return pairList 
 
     '''
