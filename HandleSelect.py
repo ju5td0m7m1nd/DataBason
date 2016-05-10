@@ -235,20 +235,35 @@ class HandleSelect:
                                                 else:
                                                     selectResult[dirtyName].append(table.records[row][column]) 
                         else:
+                            if type(self.matchPair) is int:
+                                for row in self.returnTables[tableName].records:
+                                    record = self.returnTables[tableName].records[row]
+                                    for column in record:
+                                        dirtyName = tableName +'.' + column
+                                        if not dirtyName in selectResult:
+                                            selectResult[dirtyName] = [record[column]]
+                                        else:
+                                            selectResult.append(record[column])     
+                            else:
+                                for p in self.matchPair:
+                                    pk = p[tableName]
+                                    for c in self.returnTables[tableName].records[pk]:
+                                        dirtyName = tableName + '.' + c
+                                        if not dirtyName in selectResult:
+                                            selectResult[dirtyName] = [self.returnTables[tableName].records[pk][c]]
+                                        else:
+                                            value = self.returnTables[tableName].records[pk][c]
+                                            selectResult[dirtyName].append(value)
+                    else:
+                        if type(self.matchPair) is int:
+                            for row in self.returnTables[tableName].records:
+                                value = self.returnTables[tableName].records[row][columnName]
+                                result.append(valueName) 
+                        else:
                             for p in self.matchPair:
                                 pk = p[tableName]
-                                for c in self.returnTables[tableName].records[pk]:
-                                    dirtyName = tableName + '.' + c
-                                    if not dirtyName in selectResult:
-                                        selectResult[dirtyName] = [self.returnTables[tableName].records[pk][c]]
-                                    else:
-                                        value = self.returnTables[tableName].records[pk][c]
-                                        selectResult[dirtyName].append(value)
-                    else:
-                        for p in self.matchPair:
-                            pk = p[tableName]
-                            value = self.returnTables[tableName].records[pk][columnName]
-                            result.append(value)
+                                value = self.returnTables[tableName].records[pk][columnName]
+                                result.append(value)
                         dirtyName = tableName + '.' + columnName
                         selectResult[dirtyName] = result    
         self.selectResult = selectResult
