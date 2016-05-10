@@ -67,7 +67,7 @@ class HandleSelect:
         return pairList
 
     def checkWhere(self,queryWhere):
-        print "CHECKWHERE"
+        print ("CHECKWHERE")
         self.compareResult = []
         if len(queryWhere):  
             condition = []
@@ -83,7 +83,7 @@ class HandleSelect:
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
-                            self.chooseIndex(exp1)
+                            self.compareResult.append(self.chooseIndex(exp1))
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             operator = c['operator']
@@ -92,7 +92,7 @@ class HandleSelect:
                             elif operator == '<':
                                 operator = '>'
                             exp2['operator'] = operator 
-                            self.chooseIndex(exp2)
+                            self.compareResult.append(self.chooseIndex(exp2))
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
 
@@ -102,40 +102,24 @@ class HandleSelect:
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
-                            self.chooseIndex(exp1)
+                            self.compareResult.append(self.chooseIndex(exp1))
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             exp2['operator'] = c['operator']
-                            self.chooseIndex(exp2)
+                            self.compareResult.append(self.chooseIndex(exp2))
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
                         exp1 = self.determineExpression(c['exp1'],False)    
                         exp2 = self.determineExpression(c['exp2'],False)  
-                        self.noneIndexSelect(exp1,exp2,c['operator'])
+                        self.noneIndexSelect(exp1,exp2,c['operator']) 
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
         if len(self.compareResult) > 1 :
             self.matchPair = self.logicalMerge(self.compareResult,logic)
         elif len(self.compareResult) == 0:
-            if len(self.returnTables) == 1:
-                matchPair = []
-                for t in self.returnTables:
-                    for key in self.returnTables[t].records:
-                        matchPair.append({t:key})
-                self.matchPair = matchPair
-                del matchPair
-            elif len(self.returnTables) > 1 :
-                for i in range(0,len(self.returnTables)-1):
-                    matchPair = []
-                    tableName1 = self.returnTables.keys()[i]  
-                    tableName2 = self.returnTables.keys()[i+1]
-                    for pk1 in self.returnTables[tableName1].records :
-                        for pk2 in self.returnTables[tableName2].records:  
-                            matchPair.append({tableName1:pk1,tableName2:pk2})
-                self.matchPair = matchPair
-                del matchPair
+            self.matchPair = 0 
         else :
             self.matchPair = self.logicalMerge(self.compareResult,None)
 
@@ -179,7 +163,7 @@ class HandleSelect:
                 self.compareResult.append(self.filterRow(exp1,exp2,op))
 
     def checkSelect(self,selectQuery): 
-        print "Check Select"
+        #print "Check Select"
         requestList = selectQuery['fieldNames']
         agg = selectQuery['aggFn']
         selectResult = {}
@@ -224,53 +208,48 @@ class HandleSelect:
                                 tableName = '_ALLTABLE'
                                 columnName = request
                     if columnName == '*':
-                        for p in self.matchPair:
-                            if tableName == '_ALLTABLE':
-                                for t in p :
-                                    pk = p[t] 
-                                    for c in self.returnTables[t].records[pk]:
-                                        if not c in selectResult:
-                                            selectResult[c] = [self.returnTables[t].records[pk][c]]
-                                        else:
-                                            value = self.returnTables[t].records[pk][c]
-                                            index = self.matchPair.index(p)
-                                            listLength = len(selectResult[c])
-                                            if index == listLength :
-                                                selectResult[c].append(value)
+                        if tableName == '_ALLTABLE':
+                            if type(self.matchPair) is list :
+                                for p in self.matchPair:
+                                    for t in p :
+                                        pk = p[t] 
+                                        for c in self.returnTables[t].records[pk]:
+                                            dirtyName = t + '.' + c
+                                            if not dirtyName in selectResult:
+                                                selectResult[dirtyName] = [self.returnTables[t].records[pk][c]]
                                             else:
-                                                selectResult[c][index] = value                 
-                            else:
+                                                value = self.returnTables[t].records[pk][c]
+                                                selectResult[dirtyName].append(value)
+                            elif type(self.matchPair) is int:
+                                if len(self.returnTables) > 1 :
+                                    pass
+                                elif len(self.returnTables) == 1:
+                                    for tableName in self.returnTables:
+                                        table = self.returnTables[tableName]
+                                        for row in table.records:
+                                            for column in table.records[row]:
+                                                dirtyName = tableName + '.' + column
+                                                if not dirtyName in selectResult:
+                                                    selectResult[dirtyName] = [table.records[row][column]]
+                                                else:
+                                                    selectResult[dirtyName].append(table.records[row][column]) 
+                        else:
+                            for p in self.matchPair:
                                 pk = p[tableName]
                                 for c in self.returnTables[tableName].records[pk]:
-                                    OVERRIDE = False
-                                    for pt in PRETABLE:
-                                        if c in self.returnTables[pt].attributeList:
-                                            OVERRIDE = True
-                                            break
-                                    if not c in selectResult:
-                                        selectResult[c] = [self.returnTables[tableName].records[pk][c]]
+                                    dirtyName = tableName + '.' + c
+                                    if not dirtyName in selectResult:
+                                        selectResult[dirtyName] = [self.returnTables[tableName].records[pk][c]]
                                     else:
                                         value = self.returnTables[tableName].records[pk][c]
-                                        if OVERRIDE :
-                                            selectResult[c][self.matchPair.index(p)] = value 
-                                        else:
-                                            selectResult[c].append(value)
+                                        selectResult[dirtyName].append(value)
                     else:
-                        OVERRIDE = False
-                        for pt in PRETABLE:
-                            if columnName in selectResult.keys():
-                                OVERRIDE = True
-                                break
                         for p in self.matchPair:
                             pk = p[tableName]
                             value = self.returnTables[tableName].records[pk][columnName]
-                            if OVERRIDE:
-                                selectResult[columnName][self.matchPair.index(p)] = value
-                            else: 
-                                result.append(value)
-                        if not OVERRIDE:
-                            selectResult[columnName] = result    
-                    PRETABLE.append(tableName)    
+                            result.append(value)
+                        dirtyName = tableName + '.' + columnName
+                        selectResult[dirtyName] = result    
         self.selectResult = selectResult
     
     def selectColumnValid(self,requestList):
@@ -306,8 +285,9 @@ class HandleSelect:
     Logic : AND OR None
     compareResult : Dict, bool
     '''
+    #@profile
     def logicalMerge(self,compareResult,logic):
-        print "Logical Merge"
+        print ("Logical Merge")
         if logic == None:
             if type(compareResult[0]) is list:
                 return compareResult[0]
@@ -317,7 +297,7 @@ class HandleSelect:
             resultStandard = []
             if logic == 'and':
                 for cr in compareResult:
-                    print len(cr)
+                    #print len(cr)
                     if not len(cr):
                         return []
                     #if not len(resultStandard):
@@ -368,7 +348,7 @@ class HandleSelect:
     Return a filtered dict
     '''
     def filterRow(self, exp1,exp2,op):
-            print "Filter Row "
+            print ("Filter Row ")
             #Create a new dict to store compare results.
             #Init
             pairList = []
@@ -485,7 +465,7 @@ class HandleSelect:
     '''
 
     def determineExpression(self,exp,USEINDEX):
-        print "determineExpression"
+        print ("determineExpression")
         # exp is number.
         if type(exp) is int:
             return exp

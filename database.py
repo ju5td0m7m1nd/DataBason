@@ -1,3 +1,4 @@
+import time
 import glob
 import pickle
 import re
@@ -51,7 +52,7 @@ class Database:
                 data = parser.parse()
                 index = self.tables[data['tableName']].hashIndex(data['attr'])
                 self.addIndex(data['tableName'], data['attr'], index, 'hash')
-
+            return []
         elif cmd=='insert':
             self.command = 'insert'
             data = parser.parse()
@@ -80,7 +81,8 @@ class Database:
             self.hash_indexes[tableName+'#'+attr] = newIndex
         else:
             self.tree_indexes[tableName+'#'+attr] = newIndex
-        saveIndex()
+        self.saveIndex(self.hash_indexes)
+        self.saveIndex(self.tree_indexes)
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
@@ -112,28 +114,18 @@ class Database:
 
 ## test
 if __name__ == '__main__':
-    print "info from __main__ of database.py"
+    #print "NO"
     db = Database()
-    s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
-    
-    s2 = "insert into Item values (8, 'a', 100)"
-    s3 = "insert into Item values (9, 'b', 200)"
-    s4 = "insert into Item values (10, 'c', 200)"
-    s5 = "insert into Item values (11, 'd', 400)"
-    
-    s6 = "create hashindex on Item(a_field)"
-    s7 = "create treeindex on Item(a_field)"
-    s8 = 'select * from Item where a_field = 200'
-
-    db.processQuery(s)
-    db.processQuery(s2)
-    db.processQuery(s3)
-    db.processQuery(s4)
-    db.processQuery(s5)
-    db.processQuery(s6)
-    db.processQuery(s7)
-    db.processQuery(s8)
-    #print db.hash_indexes
-    #print db.tree_indexes['item#des'].values()
-    #select = "select name, teacher.name from students, teachers where teacherName=teacher.name"
-    # db.processQuery(select)
+    #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
+    #s2 = "insert into Item values (8, 'hi', 100)"
+    #db.processQuery(s)
+    #db.processQuery(s2)
+    #1 select = "SELECT * FROM trans WHERE attr5 = 0;"
+    #2 select = "SELECT COUNT(*) FROM user1, trans WHERE user1.attr1 = trans.attr2 AND user1.attr5 > 50000;"
+    #3 select = "SELECT COUNT(*) FROM user1 WHERE attr3 > 100000 AND attr3 < 200000;"
+    #4 select = "SELECT COUNT(*) FROM trans;"
+    select = "SELECT SUM(attr4) FROM user1 WHERE attr3 = 1510503 OR attr5 > 500000;"
+    t = time.time()
+    db.processQuery(select)
+    end = time.time() - t
+    print(end)

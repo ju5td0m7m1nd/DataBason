@@ -50,7 +50,7 @@ class Table :
                 raise RuntimeError('Wrong number of value.')
         else:    
             if not self.CheckFieldMatch(Field,Value):
-                print "Field, Value doesn't match"
+                print("Field, Value doesn't match")
                 raise RuntimeError("Field, value doesn't match.")
             for f in Field:
                 if f in newRecord:
@@ -66,22 +66,22 @@ class Table :
                 pkAttr = newRecord[self.primaryKey]
                 self.records[pkAttr] = record
         elif ErrorCode == 2:
-            print "unknown column"
+            print ("unknown column")
             raise RuntimeError("unknown column")
         elif ErrorCode == 3:
-            print "duplicated primary key"
+            print ("duplicated primary key")
             raise RuntimeError("duplicated primary key")
         elif ErrorCode == 4:
-            print "type error"
+            print ("type error")
             raise RuntimeError("type error")
         elif ErrorCode == 5:
-            print "varchar length incorrect"
+            print ("varchar length incorrect")
             raise RuntimeError("varchar length incorrect")
         elif ErrorCode == 6:
-            print "missing primary key"
+            print ("missing primary key")
             raise RuntimeError("missing primary key")
         else:
-            print "error" 
+            print ("error")
 
     def CreateRecordObject(self,newRecord):
         r = {}
@@ -153,8 +153,8 @@ class Table :
     def __PrintColumn__(self):
         
         for attribute in self.attributeList:
-            print attribute['name'] + ' ' + attribute['type']
+            print (attribute['name'] + ' ' + attribute['type'])
     def __PrintData__(self):
         for r in self.records:
-            print self.records[r]
+            print (self.records[r])
 
