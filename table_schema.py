@@ -23,14 +23,22 @@ class Table :
 
     def treeIndex(self, attr, order=125):
         bt = BPlusTree(order)
-        for v in self.records.values():
-            bt.insert(v[attr], v)
-        print (bt)
+        for k,v in self.records.items():
+            bt.insert(v[attr], {self.tableName : k})
+            #print v
+        #print bt
         return bt
 
     def hashIndex(self, attr):
-        
-        return {}
+        h = {}
+        for k,v in self.records.items():
+            if v[attr] in h:
+                h[v[attr]].append({self.tableName : k})
+            else:
+                h[v[attr]] = []
+                h[v[attr]].append({self.tableName : k})
+        #print h
+        return h
 
     def Insert(self,Field,Value):
         newRecord = {} 

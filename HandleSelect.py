@@ -31,7 +31,6 @@ class HandleSelect:
         self.checkWhere(self.query['where'])
         self.checkSelect(self.query['select'])  
         return self.selectResult
-    
     def loadTable(self,queryFrom):
         returnTables = {}
         db = self.db
@@ -52,8 +51,22 @@ class HandleSelect:
                 raise RuntimeError ("LoadTable : Select from table which doesn't exist") 
         self.returnTables = returnTables 
     
+    def chooseIndex(self, indexQuery):
+        op = indexQuery['operator']
+        idxName = indexQuery['tableName']+'#'+indexQuery['attrName']
+        c = indexQuery['constant']
+        if op == '=':
+            pairList = self.db.hash_indexes[idxName][c]
+        elif op == '<':
+            pairList = self.db.tree_indexes[idxName].lt(c)
+        elif op == '>':
+            pairList = self.db.tree_indexes[idxName].gt(c)
+        else:
+            pairList = self.db.tree_indexes[idxName].neq(c)
+        return pairList
+
     def checkWhere(self,queryWhere):
-        print ("CHECKWHERE")
+        #print ("CHECKWHERE")
         self.compareResult = []
         if len(queryWhere):  
             condition = []
@@ -62,14 +75,15 @@ class HandleSelect:
             condition.append(queryWhere['term2'])
             for c in condition:  
                 if c :
-                    '''
+                    
                     if type(c['exp1']) is int or type(c['exp2']) is int:
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
+                        indexQuery = {}
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
-                            print exp1
+                            self.compareResult.append(self.chooseIndex(exp1))
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             operator = c['operator']
@@ -78,29 +92,27 @@ class HandleSelect:
                             elif operator == '<':
                                 operator = '>'
                             exp2['operator'] = operator 
-                            print exp2
+                            self.compareResult.append(self.chooseIndex(exp2))
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
-                        
+
                     elif '\"' in c['exp1'] or '\"' in c['exp2'] :
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
                         if type(exp1) is dict :
                             exp1['constant'] = exp2
                             exp1['operator'] = c['operator']
+                            self.compareResult.append(self.chooseIndex(exp1))
                         elif type(exp2) is dict:
                             exp2['constant'] = exp1
                             exp2['operator'] = c['operator']
+                            self.compareResult.append(self.chooseIndex(exp2))
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
-                        exp1 = self.determineExpression(c['exp1'],False)    
-                        exp2 = self.determineExpression(c['exp2'],False)  
-                        self.noneIndexSelect(exp1,exp2,c['operator'])    
-                    '''
-                    exp1 = self.determineExpression(c['exp1'],False)    
-                    exp2 = self.determineExpression(c['exp2'],False)  
-                    self.noneIndexSelect(exp1,exp2,c['operator'])
+                            exp1 = self.determineExpression(c['exp1'],False)    
+                            exp2 = self.determineExpression(c['exp2'],False)  
+                            self.noneIndexSelect(exp1,exp2,c['operator']) 
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
@@ -275,7 +287,7 @@ class HandleSelect:
     '''
     #@profile
     def logicalMerge(self,compareResult,logic):
-        print ("Logical Merge")
+        #print ("Logical Merge")
         if logic == None:
             if type(compareResult[0]) is list:
                 return compareResult[0]
@@ -336,7 +348,7 @@ class HandleSelect:
     Return a filtered dict
     '''
     def filterRow(self, exp1,exp2,op):
-            print ("Filter Row ")
+            #print ("Filter Row ")
             #Create a new dict to store compare results.
             #Init
             pairList = []
@@ -453,7 +465,7 @@ class HandleSelect:
     '''
 
     def determineExpression(self,exp,USEINDEX):
-        print ("determineExpression")
+        #print ("determineExpression")
         # exp is number.
         if type(exp) is int:
             return exp

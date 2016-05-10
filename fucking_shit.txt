@@ -1,1 +1,10 @@
-1438		
+Roo		1		
+Aoo		2		
+Woo		3		
+Eoo		4		
+Too		5		
+Yoo		6		
+Soo		7		
+Xoo		8		
+Boo		9		
+Hoo		10		

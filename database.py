@@ -1,3 +1,4 @@
+import pyximport; pyximport.install(pyimport = True)
 import time
 import glob
 import pickle
@@ -12,18 +13,25 @@ class Database:
         tables -- a dictionary. key:tableName, value:a Table
         
     '''
-    file_dir = 'files/'
+    dirs = ['files/','tree_indexes/', 'hash_indexes']
     command = ''
     def __init__(self):
         self.tables = {}
-        self.toBeSaved = []
         self.tree_indexes = {}
         self.hash_indexes = {}
+        self.toBeSaved = []
         # load all the tables from the disk (temporary implementation)
-        tablePaths = glob.glob(self.file_dir + '*.pkl')
-        for p in tablePaths:
-            table = self.loadTable(p)
-            self.tables[table.tableName] = table
+        for d in self.dirs:
+            paths = glob.glob(d + '*.pkl')
+            for p in paths:
+                obj = self.loadTable(p)
+                if d == 'files/':
+                    self.tables[obj.tableName] = obj
+                elif d == 'tree_indexes/':
+                    self.tree_indexes = obj
+                elif d == 'hash_indexes/':
+                    self.hash_indexes = obj
+
 
     def processQuery(self, s):
         parser = Parser(s)
@@ -45,7 +53,7 @@ class Database:
                 data = parser.parse()
                 index = self.tables[data['tableName']].hashIndex(data['attr'])
                 self.addIndex(data['tableName'], data['attr'], index, 'hash')
-
+            return []
         elif cmd=='insert':
             self.command = 'insert'
             data = parser.parse()
@@ -72,9 +80,10 @@ class Database:
         # the key of the index dict is tableName#attrName
         if idxType == 'hash':
             self.hash_indexes[tableName+'#'+attr] = newIndex
+            self.saveIndex(self.hash_indexes)
         else:
             self.tree_indexes[tableName+'#'+attr] = newIndex
-        # add save index
+            self.saveIndex(self.tree_indexes)
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
@@ -87,7 +96,13 @@ class Database:
             return pickle.load(f)
     
     def saveTable(self, obj, name):
-        with open(self.file_dir + name + '.pkl', 'wb') as f:
+        with open('files/' + name + '.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+    def saveIndex(self, obj):
+        with open('tree_indexes/tree_indexes.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+        with open('hash_indexes/hash_indexes.pkl', 'wb') as f:
             pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
 
     def saveAll(self):

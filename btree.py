@@ -398,7 +398,8 @@ class BTree(object):
 			levels.append(nodes)
 
 		self._root = self.BRANCH(self, contents=seps, children=levels[-1])
-'''
+                '''
+
 class BPlusTree(BTree):
 	LEAF = _BPlusLeaf
 
@@ -713,7 +714,6 @@ def tree_test():
 			minN = n
 		print ('order:'+str(n)+' '+str(tStop - tStart))
 	print ('cost:'+str(minCost)+' minN:'+ str(minN))
-
 if __name__ == '__main__':
 	#unittest.main()
 	#tree_test()
