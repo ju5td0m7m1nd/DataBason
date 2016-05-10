@@ -22,7 +22,10 @@ class Aggregation:
                     tableLength = []
                     for table in returnTable:
                         tableLength.append(len(returnTable[table].records))
-                    self.counted = tableLength[0] * tableLength[1]
+                    if len(tableLength) > 1:
+                        self.counted = tableLength[0] * tableLength[1]
+                    else:
+                        self.counted = tableLength[0] 
                 else:  
                     self.counted = len(returnTable[table_name].records)
             else:
