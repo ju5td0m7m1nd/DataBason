@@ -6,7 +6,7 @@ class Lexer:
     idx = 0
     keywords = ['create','table','insert','into','values',\
                'int','varchar','primary', 'key','select', 'from', 'where',\
-                'and', 'or', 'as', 'count', 'sum']
+                'and', 'or', 'as', 'count', 'sum', 'hashindex', 'treeindex','on']
     errorMsg = 'Wrong SQL syntax!'
     minInt = -2147483648
     maxInt = 2147483647

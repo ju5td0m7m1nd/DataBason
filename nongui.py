@@ -6,7 +6,7 @@ from database import Database
 from table_schema import Table
 
 def runQuery(db):
-    que = raw_input("$MAHSEEKO (type exit to leave)-> ")
+    que = raw_input("$MASEEKO (type exit to leave)-> ")
     if que == 'exit':
         sys.exit('bye')
     # parse query list.

@@ -2,9 +2,10 @@ import time
 import glob
 import pickle
 import re
-from sqlparser import Parser
+from parser import Parser
 from table_schema import *
 from HandleSelect import *
+from btree import *
 
 class Database:
     '''
@@ -16,6 +17,8 @@ class Database:
     def __init__(self):
         self.tables = {}
         self.toBeSaved = []
+        self.tree_indexes = {}
+        self.hash_indexes = {}
         # load all the tables from the disk (temporary implementation)
         tablePaths = glob.glob(self.file_dir + '*.pkl')
         for p in tablePaths:
@@ -26,12 +29,23 @@ class Database:
         parser = Parser(s)
         cmd = re.split('\s+',s.strip(),1)[0].lower()
         if cmd=='create':
-            self.command = 'create'
-            data = parser.parse()
-            table = Table(data['tableName'], data['primaryKey'], data['fields'])
-            self.addTable(table)
-            #print 'created table: ', data
-            return table
+            cmdType = re.split('\s+', s.strip(),2)[1].lower()
+            self.command = cmd + ' ' + cmdType
+            if cmdType=='table':
+                data = parser.parse()
+                table = Table(data['tableName'], data['primaryKey'], data['fields'])
+                self.addTable(table)
+                #print 'created table: ', data
+                return table
+            elif cmdType=='treeindex':
+                data = parser.parse()
+                index = self.tables[data['tableName']].treeIndex(data['attr'])
+                self.addIndex(data['tableName'], data['attr'], index, 'tree')
+            elif cmdType=='hashindex':
+                data = parser.parse()
+                index = self.tables[data['tableName']].hashIndex(data['attr'])
+                self.addIndex(data['tableName'], data['attr'], index, 'hash')
+
         elif cmd=='insert':
             self.command = 'insert'
             data = parser.parse()
@@ -53,6 +67,14 @@ class Database:
             return hs.selectResult
         else:
             raise RuntimeError('Unkown keyword: ' + cmd)
+    
+    def addIndex(self, tableName, attr ,newIndex, idxType):
+        # the key of the index dict is tableName#attrName
+        if idxType == 'hash':
+            self.hash_indexes[tableName+'#'+attr] = newIndex
+        else:
+            self.tree_indexes[tableName+'#'+attr] = newIndex
+        # add save index
 
     def addTable(self, newTable):
         if newTable.tableName in self.tables:
@@ -76,10 +98,8 @@ class Database:
                 already_saved.append(element.tableName)
                 self.saveTable(element, element.tableName)
 
-
 ## test
 if __name__ == '__main__':
-    #print "NO"
     db = Database()
     #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
     #s2 = "insert into Item values (8, 'hi', 100)"
