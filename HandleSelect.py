@@ -64,7 +64,6 @@ class HandleSelect:
             pairList = self.db.tree_indexes[idxName].gt(c)
         else:
             pairList = self.db.tree_indexes[idxName].neq(c)
-        print pairList
         return pairList
 
     def checkWhere(self,queryWhere):
