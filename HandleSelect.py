@@ -54,7 +54,7 @@ class HandleSelect:
     
     def checkWhere(self,queryWhere):
         print "CHECKWHERE"
-        compareResult = []
+        self.compareResult = []
         if len(queryWhere):  
             condition = []
             logic = queryWhere['logic']
@@ -62,54 +62,46 @@ class HandleSelect:
             condition.append(queryWhere['term2'])
             for c in condition:  
                 if c :
-                    exp1 = self.determineExpression(c['exp1'])
-                    exp2 = self.determineExpression(c['exp2'])
-                    op = c['operator']
-                    # Always make exp1 as list 
-                    # Case 1, exp1 : int exp2 : list swap(exp1,exp2)
-                    # Case 2, exp1 : str exp2 : list swap(exp1,exp2)    
-                    if type(exp2) is list :                 
-                        temp = exp2
-                        exp2 = exp1
-                        exp1 = temp                    
-                    
-                    # Due to previous swap, if exp1 not list, and both of them is not list 
-                    if not type(exp1) is list:
-                        #Directly do logical operation
-                        RESULT = False
-                        if op == "=":
-                            RESULT = (exp1 == exp2 )
-                        elif op == ">":
-                            RESULT = (exp1 > exp2 )
-                        elif op == "<":
-                            RESULT = (exp1 < exp2 )
-                        elif op == "<>":
-                            RESULT = (exp1 != exp2 )
-                        pairList = []
-                        if RESULT :
-                            # Need an efficient way to join 2 table.
-                            for t in self.returnTables:
-                                # If pair list is not init.
-                                if not len(pairList):
-                                    for key in self.returnTables[t].records:
-                                        pairList.append({t:key})
-                                else :
-                                    tempList = []  
-                                    for key in self.returnTables[t].records:
-                                        for l in pairList:
-                                            for pairKey in l:
-                                                tempList.append({pairKey:l[pairKey],t:key})
-                                    pairList = tempList     
-                        compareResult.append(pairList) 
+                    if type(c['exp1']) is int or type(c['exp2']) is int:
+                        exp1 = self.determineExpression(c['exp1'],True)    
+                        exp2 = self.determineExpression(c['exp2'],True)    
+                        if type(exp1) is dict :
+                            exp1['constant'] = exp2
+                            exp1['operator'] = c['operator']
+                            print exp1
+                        elif type(exp2) is dict:
+                            exp2['constant'] = exp1
+                            operator = c['operator']
+                            if operator == '>':
+                                operator = '<'
+                            elif operator == '<':
+                                operator = '>'
+                            exp2['operator'] = operator 
+                            print exp2
+                        else:
+                            self.noneIndexSelect(exp1,exp2,c['operator'])
+                        
+                    elif '\"' in c['exp1'] or '\"' in c['exp2'] :
+                        exp1 = self.determineExpression(c['exp1'],True)    
+                        exp2 = self.determineExpression(c['exp2'],True)    
+                        if type(exp1) is dict :
+                            exp1['constant'] = exp2
+                            exp1['operator'] = c['operator']
+                        elif type(exp2) is dict:
+                            exp2['constant'] = exp1
+                            exp2['operator'] = c['operator']
+                        else:
+                            self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
-                        compareResult.append(self.filterRow(exp1,exp2,op))
-                    self.compareResult = compareResult
+                        exp1 = self.determineExpression(c['exp1'],False)    
+                        exp2 = self.determineExpression(c['exp2'],False)  
+                        self.noneIndexSelect(exp1,exp2,c['operator'])    
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
-        if len(compareResult) > 1 :
-            self.matchPair = self.logicalMerge(compareResult,logic)
-        elif len(compareResult) == 0:
+        if len(self.compareResult) > 1 :
+            self.matchPair = self.logicalMerge(self.compareResult,logic)
+        elif len(self.compareResult) == 0:
             if len(self.returnTables) == 1:
                 matchPair = []
                 for t in self.returnTables:
@@ -128,8 +120,47 @@ class HandleSelect:
                 self.matchPair = matchPair
                 del matchPair
         else :
-            self.matchPair = self.logicalMerge(compareResult,None)
-    
+            self.matchPair = self.logicalMerge(self.compareResult,None)
+
+    def noneIndexSelect (self,exp1,exp2,op):
+            # Always make exp1 as list 
+            # Case 1, exp1 : int exp2 : list swap(exp1,exp2)
+            # Case 2, exp1 : str exp2 : list swap(exp1,exp2)    
+            if type(exp2) is list :                 
+                temp = exp2
+                exp2 = exp1
+                exp1 = temp                    
+            # Due to previous swap, if exp1 not list, and both of them is not list 
+            if not type(exp1) is list:
+                #Directly do logical operation
+                RESULT = False
+                if op == "=":
+                    RESULT = (exp1 == exp2 )
+                elif op == ">":
+                    RESULT = (exp1 > exp2 )
+                elif op == "<":
+                    RESULT = (exp1 < exp2 )
+                elif op == "<>":
+                    RESULT = (exp1 != exp2 )
+                pairList = []
+                if RESULT :
+                    # Need an efficient way to join 2 table.
+                    for t in self.returnTables:
+                        # If pair list is not init.
+                        if not len(pairList):
+                            for key in self.returnTables[t].records:
+                                pairList.append({t:key})
+                        else :
+                            tempList = []  
+                            for key in self.returnTables[t].records:
+                                for l in pairList:
+                                    for pairKey in l:
+                                        tempList.append({pairKey:l[pairKey],t:key})
+                            pairList = tempList     
+                self.compareResult.append(pairList) 
+            else:
+                self.compareResult.append(self.filterRow(exp1,exp2,op))
+
     def checkSelect(self,selectQuery): 
         print "Check Select"
         requestList = selectQuery['fieldNames']
@@ -436,7 +467,7 @@ class HandleSelect:
 
     '''
 
-    def determineExpression(self,exp):
+    def determineExpression(self,exp,USEINDEX):
         print "determineExpression"
         # exp is number.
         if type(exp) is int:
@@ -454,12 +485,16 @@ class HandleSelect:
                 #Check column exist
                 if  name in self.returnTables[prefix].attributeList :
                     expList = []
-                    records = self.returnTables[prefix].records
-                    for row in records:    
-                        expList.append({'tableName':prefix,'value':records[row][name],'pk':row})
-                    return expList
+                    if USEINDEX :
+                        return {'tableName':prefix,'attrName':name}
+                    else:
+                        # if not using index return expression's list 
+                        records = self.returnTables[prefix].records
+                        for row in records:    
+                            expList.append({'tableName':prefix,'value':records[row][name],'pk':row})
+                        return expList
                 else:
-                    raise RuntimeError ("DetermineExpression : Column %s not in Table %s",name,prefix)
+                    raise RuntimeError ("DetermineExpression : Column"+name+" not in Table"+prefix)
             else :
                 raise RuntimeError ("DetermineExpression : Table: " + prefix + " doesn't be loaded")
         else :
@@ -481,19 +516,23 @@ class HandleSelect:
                 elif flag == 0 :
                     raise RuntimeError ("DetermineExpression : No match column")
                 else:
-                    records = self.returnTables[tableName].records
-                    for row in records:
-                        expList.append({'tableName':tableName,'value':records[row][exp],'pk':row})
-                    return expList 
-  
+                    if USEINDEX:
+                        return {'tableName':tableName,'attrName':exp}
+                    else:
+                        records = self.returnTables[tableName].records
+                        for row in records:
+                            expList.append({'tableName':tableName,'value':records[row][exp],'pk':row})
+                        return expList 
             else :
                 # check column in table
                 for table in self.returnTables :
                     if exp in self.returnTables[table].attributeList :
-                        # a dictionary contain only {row[pk] : row[exp]} .
-                        records = self.returnTables[table].records
-                        for row in records:
-                            expList.append({'tableName':table,'value':records[row][exp],'pk':row})
-                        return expList
+                        if USEINDEX:
+                            return {'tableName':table,'attrName':exp}
+                        else:
+                            records = self.returnTables[table].records
+                            for row in records:
+                                expList.append({'tableName':table,'value':records[row][exp],'pk':row})
+                            return expList
                     else :
                         raise RuntimeError ("DetermineExpression : Column "+exp+ " not in table")
