@@ -285,6 +285,8 @@ class HandleSelect:
         for column in requestList:
             if '.' in column : 
                 tableName = column.split('.')[0] 
+                if tableName in self.aliasLookUp:
+                    tableName = self.aliasLookUp[tableName]
                 columnName = column.split('.')[1] 
                 if tableName in self.returnTables :
                     if columnName == '*':
@@ -351,7 +353,6 @@ class HandleSelect:
                         a = sorted(a, key = lambda x : x[tableName])
                         b = sorted(b, key = lambda x : x[tableName])
                         while i < boundaryA and j < boundaryB:
-                            print (str(a[i][tableName]) + " " + str(b[j][tableName]) )
                             if a[i][tableName] == b[j][tableName]:
                                 resultStandard.append(a[i])
                                 i += 1
