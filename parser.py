@@ -1,3 +1,4 @@
+#import pyximport; pyximport.install(pyimport = True)
 from lexer import Lexer
 from schema import Schema
 

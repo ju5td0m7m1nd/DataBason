@@ -350,7 +350,7 @@ class BTree(object):
 
 		return tree
 
-	def _build_bulkloaded_leaves(self, items):
+	'''def _build_bulkloaded_leaves(self, items):
 		minimum = self.order // 2
 		leaves, seps = [[]], []
 
@@ -398,6 +398,7 @@ class BTree(object):
 			levels.append(nodes)
 
 		self._root = self.BRANCH(self, contents=seps, children=levels[-1])
+                '''
 
 class BPlusTree(BTree):
 	LEAF = _BPlusLeaf
@@ -500,7 +501,7 @@ class BPlusTree(BTree):
 		while i < index:
 			result.append(node.data[i])
 			i += 1
-		print 'index:'+str(index)
+		print ('index:'+str(index))
 		while node.contents[index] == key:
 			result.append(node.data[index])
 			index += 1
@@ -684,12 +685,12 @@ def hash_test():
 	t = time.time()
 	for i in accessList:
 		a = h[i]
-	print 'hash acces:'+str(time.time() - t)
+	print ('hash acces:'+str(time.time() - t))
 
 	t = time.time()
 	for i in accessList:
 		a = bt.get(i)
-	print 'tree acces:'+str(time.time() - t)
+	print ('tree acces:'+str(time.time() - t))
 
 def tree_test():
 	t = []
@@ -701,19 +702,18 @@ def tree_test():
 		bt = BPlusTree(n)
 		l = range(10000)
 		for item in l:
-		    bt.insert(item, str(item))
+			bt.insert(item, str(item))
 		tStart = time.time()
 		for i in accessList:
-		    b = bt.gt(i)
-		    c = bt.lt(i)
+			b = bt.gt(i)
+			c = bt.lt(i)
 		tStop = time.time()
 		cost = tStop-tStart
 		if cost < minCost:
-		    minCost = cost
-		    minN = n
-		print 'order:'+str(n)+' '+str(tStop - tStart)
-	print 'cost:'+str(minCost)+' minN:'+ str(minN)
-
+			minCost = cost
+			minN = n
+		print ('order:'+str(n)+' '+str(tStop - tStart))
+	print ('cost:'+str(minCost)+' minN:'+ str(minN))
 if __name__ == '__main__':
 	#unittest.main()
 	#tree_test()

@@ -6,9 +6,14 @@ from database import Database
 from table_schema import Table
 
 def runQuery(db):
-    que = raw_input("$MAHSEEKO (type exit to leave)-> ")
+    que = raw_input("$MASEEKO (type exit to leave)-> ")
     if que == 'exit':
+        db.saveAll()
         sys.exit('bye')
+    elif que == 'load':
+        pth = raw_input('$PATH-> ')
+        with open(pth, 'r') as r:
+            que = r.read()
     # parse query list.
     query_list = re.split(';', que.strip())
     if '' in query_list:
@@ -19,8 +24,8 @@ def runQuery(db):
         table = db.processQuery(query)
         d = time.time() - t
         print (d)
-    if table == []:
-        pass 
+    if isinstance(table, Table) or table == []:
+        pass
     else: 
         with open('fucking_shit.txt', 'w') as f:
             k = list(table)

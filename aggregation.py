@@ -31,11 +31,14 @@ class Aggregation:
             else:
                 self.counted = len(match_pair)
         else:
-            for pair in match_pair:
-                key = pair[table_name]
-                value = returnTable[table_name].records[key][column_name]
-                if value != None:
-                    self.counted += 1
+            if type(match_pair) is int:
+                self.counted = len(returnTable[table_name].records)
+            else:
+                for pair in match_pair:
+                    key = pair[table_name]
+                    value = returnTable[table_name].records[key][column_name]
+                    if value != None:
+                        self.counted += 1
         
         # handle return table (rename AS blablabla)
         returnCol = 'COUNT('+column_name+')'
@@ -54,7 +57,6 @@ class Aggregation:
                     self.to_sum += returnTable[query_from].records[pk][column_name]
                 except TypeError:
                     continue
-                    print "Unsupported sum error near SUM()" 
         else:
             for k in returnTable[query_from].records.keys():
                 for m in match_pair:
@@ -63,7 +65,7 @@ class Aggregation:
                             self.to_sum += returnTable[query_from].records[k][column_name]
                         except TypeError:
                             continue
-                            print "Unsupported sum error near SUM()"
+
         returnCol = 'SUM('+column_name+')'
         to_return = {returnCol: [self.to_sum]}
         return [self.to_sum]

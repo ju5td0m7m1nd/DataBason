@@ -1,3 +1,4 @@
+import pyximport; pyximport.install(pyimport = True)
 import time
 import glob
 import pickle
@@ -114,7 +115,6 @@ class Database:
 
 ## test
 if __name__ == '__main__':
-    #print "NO"
     db = Database()
     #s ="CREATE TABLE Item (id int primary key, des varchar(20), a_field int)" 
     #s2 = "insert into Item values (8, 'hi', 100)"

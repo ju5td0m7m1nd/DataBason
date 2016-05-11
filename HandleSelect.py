@@ -66,7 +66,7 @@ class HandleSelect:
         return pairList
 
     def checkWhere(self,queryWhere):
-        print ("CHECKWHERE")
+        #print ("CHECKWHERE")
         self.compareResult = []
         if len(queryWhere):  
             condition = []
@@ -75,7 +75,7 @@ class HandleSelect:
             condition.append(queryWhere['term2'])
             for c in condition:  
                 if c :
-                    '''
+                    
                     if type(c['exp1']) is int or type(c['exp2']) is int:
                         exp1 = self.determineExpression(c['exp1'],True)    
                         exp2 = self.determineExpression(c['exp2'],True)    
@@ -110,10 +110,9 @@ class HandleSelect:
                         else:
                             self.noneIndexSelect(exp1,exp2,c['operator'])
                     else:
-                    '''
-                    exp1 = self.determineExpression(c['exp1'],False)    
-                    exp2 = self.determineExpression(c['exp2'],False)  
-                    self.noneIndexSelect(exp1,exp2,c['operator']) 
+                            exp1 = self.determineExpression(c['exp1'],False)    
+                            exp2 = self.determineExpression(c['exp2'],False)  
+                            self.noneIndexSelect(exp1,exp2,c['operator']) 
         # Handle logical merge
         # Only when compareResult have more than one item
         # need to merge
@@ -311,7 +310,7 @@ class HandleSelect:
     '''
     #@profile
     def logicalMerge(self,compareResult,logic):
-        print ("Logical Merge")
+        #print ("Logical Merge")
         if logic == None:
             if type(compareResult[0]) is list:
                 return compareResult[0]
@@ -343,7 +342,10 @@ class HandleSelect:
                         boundaryB = len(b)
                         i = 0 
                         j = 0
+                        a = sorted(a, key = lambda x : x[tableName])
+                        b = sorted(b, key = lambda x : x[tableName])
                         while i < boundaryA and j < boundaryB:
+                            print (str(a[i][tableName]) + " " + str(b[j][tableName]) )
                             if a[i][tableName] == b[j][tableName]:
                                 resultStandard.append(a[i])
                                 i += 1
@@ -448,7 +450,7 @@ class HandleSelect:
     Return a filtered dict
     '''
     def filterRow(self, exp1,exp2,op):
-            print ("Filter Row ")
+            #print ("Filter Row ")
             #Create a new dict to store compare results.
             #Init
             pairList = []
@@ -565,7 +567,7 @@ class HandleSelect:
     '''
 
     def determineExpression(self,exp,USEINDEX):
-        print ("determineExpression")
+        #print ("determineExpression")
         # exp is number.
         if type(exp) is int:
             return exp

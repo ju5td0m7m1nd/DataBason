@@ -1,0 +1,10 @@
+insert into test values (1, 'Roo');
+insert into test values (2, 'Aoo');
+insert into test values (3, 'Woo');
+insert into test values (4, 'Eoo');
+insert into test values (5, 'Too');
+insert into test values (6, 'Yoo');
+insert into test values (7, 'Soo');
+insert into test values (8, 'Xoo');
+insert into test values (9, 'Boo');
+insert into test values (10, 'Hoo');
