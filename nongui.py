@@ -21,7 +21,11 @@ def runQuery(db):
 
     for query in query_list:
         t = time.time()
-        table = db.processQuery(query)
+        try:
+            table = db.processQuery(query)
+        except:
+            print ("something wrong")
+            continue
         d = time.time() - t
         print (d)
     if isinstance(table, Table) or table == []:
