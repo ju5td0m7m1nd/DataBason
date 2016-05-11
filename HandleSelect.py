@@ -25,6 +25,7 @@ class HandleSelect:
     def __init__(self,db,query):
         self.db = db  
         self.query = query 
+        self.aliasLookUp = {}
 
     def executeQuery(self):
         self.loadTable(self.query['from'])
@@ -44,7 +45,9 @@ class HandleSelect:
                     if unitquery['alias'] in returnTables:
                         raise RuntimeError("Alias name duplicate");
                     else:
-                        returnTables[unitquery['alias']] = db.tables[tableName]
+                        self.aliasLookUp[unitquery['alias']] = tableName
+                        returnTables[tableName] = db.tables[tableName]
+                        #returnTables[unitquery['alias']] = db.tables[tableName]
                 else:
                     returnTables[tableName] = db.tables[tableName]
             else:
@@ -198,6 +201,9 @@ class HandleSelect:
                     result = []
                     if '.' in request :
                         tableName = request.split('.')[0] 
+                        # Alias Look Up
+                        if tableName in self.aliasLookUp:
+                            tableName = self.aliasLookUp[tableName]
                         columnName = request.split('.')[1]
                     else :
                         for t in self.returnTables:
@@ -366,7 +372,7 @@ class HandleSelect:
                                 j = 0
                                 while i < boundaryA and j < boundaryB:
                                     # SELECT * FROM A,B WHERE A.id > 1 and A.id < 100
-                                    if a[i][tableName] == b[j][tableName]:
+                                    if a[i][tableNameA] == b[j][tableNameA]:
                                         # Choose the unselected table
                                         for table in self.returnTables:
                                             if table != tableNameA:
@@ -376,9 +382,9 @@ class HandleSelect:
                                                     resultStandard.append(appendPair)
                                         i += 1
                                         j += 1
-                                    elif a[i][tableName] > b[j][tableName]:
+                                    elif a[i][tableNameA] > b[j][tableNameA]:
                                         j += 1
-                                    elif a[i][tableName] < b[j][tableName]:
+                                    elif a[i][tableNameA] < b[j][tableNameA]:
                                         i += 1
                             else :
                                 # SELECT * FROM A,B WHERE A.id > 1 and B.id < 100
@@ -579,6 +585,9 @@ class HandleSelect:
             exp = exp.lower()
             prefix = exp.split('.')[0]
             name = exp.split('.')[1]
+            # Alias Look Up
+            if prefix in self.aliasLookUp:
+                prefix = self.aliasLookUp[prefix]
             # Check prefix exist
             if prefix in self.returnTables:
                 #Check column exist
