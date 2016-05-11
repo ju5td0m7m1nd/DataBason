@@ -58,6 +58,7 @@ class Aggregation:
                 except TypeError:
                     continue
         else:
+            '''
             for k in returnTable[query_from].records.keys():
                 for m in match_pair:
                     if k == m[query_from]:
@@ -65,7 +66,13 @@ class Aggregation:
                             self.to_sum += returnTable[query_from].records[k][column_name]
                         except TypeError:
                             continue
-
+            '''
+            for m in match_pair:
+                key = m[query_from]
+                try :
+                    self.to_sum+=returnTable[query_from].records[key][column_name]
+                except TypeError:
+                    continue
         returnCol = 'SUM('+column_name+')'
         to_return = {returnCol: [self.to_sum]}
         return [self.to_sum]

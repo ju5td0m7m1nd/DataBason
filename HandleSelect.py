@@ -69,7 +69,7 @@ class HandleSelect:
         return pairList
 
     def checkWhere(self,queryWhere):
-        #print ("CHECKWHERE")
+        print ("CHECKWHERE")
         self.compareResult = []
         if len(queryWhere):  
             condition = []
@@ -166,7 +166,7 @@ class HandleSelect:
                 self.compareResult.append(self.filterRow(exp1,exp2,op))
 
     def checkSelect(self,selectQuery): 
-        #print "Check Select"
+        print "Check Select"
         requestList = selectQuery['fieldNames']
         agg = selectQuery['aggFn']
         selectResult = {}
@@ -318,7 +318,7 @@ class HandleSelect:
     '''
     #@profile
     def logicalMerge(self,compareResult,logic):
-        #print ("Logical Merge")
+        print ("Logical Merge")
         if logic == None:
             if type(compareResult[0]) is list:
                 return compareResult[0]
@@ -340,6 +340,8 @@ class HandleSelect:
                     #            resultStandard.remove(r)
                 a = compareResult[0]
                 b = compareResult[1]
+                print len(a)
+                print len(b)
                 pairLengthA = len(a[0])
                 pairLengthB = len(b[0])
                 if pairLengthA == pairLengthB:
@@ -401,19 +403,83 @@ class HandleSelect:
                                     resultStandard.append(pair1)
                 else :
                     if pairLengthA > pairLengthB:
-                        for dictB in b:
-                            key = dictB.keys()[0]
-                            value = dictB.values()[0]
-                            for dictA in a:
-                                if dictA[key] == value :
-                                    resultStandard.append(dictA) 
+                        tableName  = b[0].keys()[0]
+                        b_sorted = sorted(b, key=lambda x:x[tableName])
+                        a_sorted = sorted(a, key=lambda x:x[tableName])
+                        i = 0
+                        j = 0
+                        while i < len(a_sorted) and j < len(b_sorted):
+                            record1 = a_sorted[i]
+                            record2 = b_sorted[j]
+                            if record1[tableName] == record2[tableName] :
+                                #pairList.append({record1['tableName'] : record1['pk'],record2['tableName']:record2['pk']})
+                                # Use lookahead to check which list should go forward
+                                # boundary examination
+                                lookaheadI = 0
+                                lookaheadJ = 0
+                                while a_sorted[i+lookaheadI][tableName] == record2[tableName]:
+                                    if i+lookaheadI+1 < len(a_sorted):
+                                        lookaheadI += 1
+                                    elif i+lookaheadI+1 == len(a_sorted):
+                                        lookaheadI += 1
+                                        break
+                                    else :
+                                        break
+                                while b_sorted[j+lookaheadJ][tableName] == record1[tableName]:
+                                    if j+lookaheadJ+1 < len(b_sorted):
+                                        lookaheadJ += 1
+                                    elif j+lookaheadJ+1 == len(b_sorted):
+                                        lookaheadJ += 1
+                                        break
+                                    else :
+                                        break
+                                for ptrI in range(0, lookaheadI):
+                                    resultStandard.append(a_sorted[i+ptrI])
+                                i = i+lookaheadI
+                                j = j+lookaheadJ 
+                            elif record1[tableName] > record2[tableName]:
+                                j += 1
+                            elif record1[tableName] < record2[tableName]:
+                                i += 1    
                     else :
-                        for dictA in a:
-                            key = dictA.keys()[0]
-                            value = dictA.values()[0]
-                            for dictB in b:
-                                if dictB[key] == value:
-                                    resultStandard.append(dictB)
+                        tableName  = a[0].keys()[0]
+                        b_sorted = sorted(b, key=lambda x:x[tableName])
+                        a_sorted = sorted(a, key=lambda x:x[tableName])
+                        i = 0
+                        j = 0
+                        while i < len(a_sorted) and j < len(b_sorted):
+                            record1 = a_sorted[i]
+                            record2 = b_sorted[j]
+                            if record1[tableName] == record2[tableName] :
+                                #pairList.append({record1['tableName'] : record1['pk'],record2['tableName']:record2['pk']})
+                                # Use lookahead to check which list should go forward
+                                # boundary examination
+                                lookaheadI = 0
+                                lookaheadJ = 0
+                                while a_sorted[i+lookaheadI][tableName] == record2[tableName]:
+                                    if i+lookaheadI+1 < len(a_sorted):
+                                        lookaheadI += 1
+                                    elif i+lookaheadI+1 == len(a_sorted):
+                                        lookaheadI += 1
+                                        break
+                                    else :
+                                        break
+                                while b_sorted[j+lookaheadJ][tableName] == record1[tableName]:
+                                    if j+lookaheadJ+1 < len(b_sorted):
+                                        lookaheadJ += 1
+                                    elif j+lookaheadJ+1 == len(b_sorted):
+                                        lookaheadJ += 1
+                                        break
+                                    else :
+                                        break
+                                for ptrJ in range(0, lookaheadJ):
+                                    resultStandard.append(b_sorted[j+ptrJ])
+                                i = i+lookaheadI
+                                j = j+lookaheadJ 
+                            elif record1[tableName] > record2[tableName]:
+                                j += 1
+                            elif record1[tableName] < record2[tableName]:
+                                i += 1    
                 return resultStandard
             elif logic == 'or':
                 a = compareResult[0]
@@ -457,7 +523,7 @@ class HandleSelect:
     Return a filtered dict
     '''
     def filterRow(self, exp1,exp2,op):
-            #print ("Filter Row ")
+            print ("Filter Row ")
             #Create a new dict to store compare results.
             #Init
             pairList = []
@@ -574,7 +640,7 @@ class HandleSelect:
     '''
 
     def determineExpression(self,exp,USEINDEX):
-        #print ("determineExpression")
+        print ("determineExpression")
         # exp is number.
         if type(exp) is int:
             return exp

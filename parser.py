@@ -8,7 +8,7 @@ class Parser :
         process create and insert SQL command
         raise an exception on syntax error
     '''
-    maxVarcharLen = 60
+    maxVarcharLen = 40
     
     def __init__(self, query):
         self.lex = Lexer(query)

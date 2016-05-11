@@ -21,7 +21,7 @@ class Table :
         self.attributeList = attributeList
         self.records = {}
 
-    def treeIndex(self, attr, order=125):
+    def treeIndex(self, attr, order=1024):
         bt = BPlusTree(order)
         for k,v in self.records.items():
             bt.insert(v[attr], {self.tableName : k})
