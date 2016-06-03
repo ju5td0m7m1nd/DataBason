@@ -31,7 +31,7 @@ def runQuery(db):
     if isinstance(table, Table) or table == []:
         pass
     else: 
-        with open('fucking_shit.txt', 'w') as f:
+        with open('query_output.txt', 'w') as f:
             k = list(table)
             for r in range(len(table[k[0]])):
                 for i in range(len(k)):
